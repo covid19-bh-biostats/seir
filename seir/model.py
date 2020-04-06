@@ -5,6 +5,7 @@ import numpy as np
 from scipy.integrate import solve_ivp
 import pandas as pd
 
+
 class SEIR:
     """
     Implementation of a SEIR model
@@ -340,7 +341,41 @@ class SEIR:
 
         Returns
         -------
-        pd.DataFrame
+        pd.DataFrame with columns
+
+            - time
+            - (susceptible, <Compartment 1>)
+            - (susceptible, <Compartment 2>)
+            - ...
+            - susceptible
+            - (exposed, <Compartment 1>)
+            - (exposed, <Compartment 2>)
+            - ...
+            - exposed
+            - (infected (active), <Compartment 1>)
+            - (infected (active), <Compartment 2>)
+            - ...
+            - infected (active)
+            - (infected (total), <Compartment 1>)
+            - (infected (total), <Compartment 2>)
+            - ...
+            - infected (total)
+            - (removed, <Compartment 1>)
+            - (removed, <Compartment 2>(
+            - ...
+            - removed
+            - (hospitalized (active), <Compartment 1>)
+            - (hospitalized (active), <Compartment 2>)
+            - hospitalized (active)
+            - ...
+            - (in ICU, <Compartment 1>)
+            - (in ICU, <Compartment 2>)
+            - ...
+            - in ICU
+            - (deaths, <Compartment 1>)
+            - (deaths, <Compartment 2>)
+            - ...
+            - deaths
         """
         # Evaluate SEIR model results
         assert self.SEIR_solution is not None
@@ -386,12 +421,34 @@ class SEIR:
             np.divide(E_death_lag, self.incubation_period))
         deaths = np.cumsum(DEATH_new_cases_a_day, axis=0)
 
-        data = np.concatenate([np.expand_dims(time, -1), S, E, I, Icumulative, R, H_active_cases, ICU_active_cases, deaths],axis=-1)
-        columns = ['susceptible', 'exposed', 'infected (active)', 'infected (total)', 'removed', 'hospitalized (active)', 'in ICU', 'deaths (total)']
-        all_columns = ['time']+list(itertools.product(columns, self.compartments))
-        return pd.DataFrame(
-            data, columns=all_columns
-        )
+        # Compute the total cases over all compartments
+        Sall = np.expand_dims(np.sum(S, axis=-1), -1)
+        Eall = np.expand_dims(np.sum(E, axis=-1), -1)
+        Iall = np.expand_dims(np.sum(I, axis=-1), -1)
+        Icum_all = np.expand_dims(np.sum(Icumulative, axis=-1), -1)
+        Rall = np.expand_dims(np.sum(R, axis=-1), -1)
+        H_all = np.expand_dims(np.sum(H_active_cases, axis=-1), -1)
+        ICU_all = np.expand_dims(np.sum(ICU_active_cases, axis=-1), -1)
+        deaths_all = np.expand_dims(np.sum(deaths, axis=-1), -1)
+
+        # Form the results dataframe
+        data = np.concatenate([
+            np.expand_dims(time, -1), S, Sall, E, Eall, I, Iall, Icumulative,
+            Icum_all, R, Rall, H_active_cases, H_all, ICU_active_cases,
+            ICU_all, deaths, deaths_all
+        ],
+                              axis=-1)
+        columns = [
+            'susceptible', 'exposed', 'infected (active)', 'infected (total)',
+            'removed', 'hospitalized (active)', 'in ICU', 'deaths'
+        ]
+        all_columns = ['time'] + list(
+            itertools.chain.from_iterable([
+                list(itertools.product([colname], self.compartments)) +
+                [colname] for colname in columns
+            ]))
+
+        return pd.DataFrame(data, columns=all_columns)
 
 
 if __name__ == '__main__':
@@ -419,7 +476,8 @@ if __name__ == '__main__':
 
     time = np.arange(0, 200, 1, dtype=int)
     results = model.evaluate_solution(time)
-    import pdb; pdb.set_trace()
+    import pdb
+    pdb.set_trace()
     import matplotlib.pyplot as plt
     plt.plot(time, results)
     plt.show()
