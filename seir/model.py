@@ -94,7 +94,7 @@ class SEIR:
             timestep the `restrictions_function` is used to augment
             the infectivity rate matrix by a Hadamard product
             from the function's output.
-        imported_cases_function: Optional[Callable] = None):
+        imported_cases_function: Optional[Callable]
         """
         # Set a single compartment if nothing was provided
         if compartments:
@@ -546,33 +546,3 @@ class SEIR:
 
         return pd.DataFrame(data, columns=all_columns)
 
-
-if __name__ == '__main__':
-
-    model = SEIR(incubation_period=3,
-                 infectious_period=7,
-                 initial_R0=2.3,
-                 hospitalization_probability=[0.01, 0, 0, 0, 0.2],
-                 hospitalization_duration=21,
-                 hospitalization_lag_from_onset=6,
-                 icu_probability=0.001,
-                 icu_duration=7,
-                 icu_lag_from_onset=21,
-                 death_probability=0.1,
-                 death_lag_from_onset=27,
-                 compartments=['G1', 'G2', 'G3', 'G4', 'G5'],
-                 population=[2.5e6, 1e6, 3e5, 5e4, 4e5]
-                                    )
-
-    model.set_initial_state(population_susceptible=0.99,
-                            population_exposed=0.005,
-                            population_infected=0.005,
-                            probabilities=True)
-
-    model.simulate(200)
-
-    time = np.arange(0, 200, 1, dtype=int)
-    results = model.evaluate_solution(time)
-    import matplotlib.pyplot as plt
-    plt.plot(time, results)
-    plt.show()
