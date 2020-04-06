@@ -129,7 +129,7 @@ class SEIR:
         self.population = self._fix_size(population)
 
         # Sanity checking on the contacts_matrix argument
-        if contacts_matrix:
+        if contacts_matrix and contacts_matrix.any():
             assert contacts_matrix.shape[0] == len(self.compartments)
             assert contacts_matrix.shape[1] == len(self.compartments)
         else:
