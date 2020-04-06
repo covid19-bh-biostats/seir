@@ -1,8 +1,9 @@
+import itertools
 from typing import Any, Callable, List, Tuple, Optional, Union
 
 import numpy as np
 from scipy.integrate import solve_ivp
-
+import pandas as pd
 
 class SEIR:
     """
@@ -32,7 +33,8 @@ class SEIR:
         rate from the contacts matrix, R0, and infective_duration. Supports
         compartmentalizing the population to, e.g., age-groups.
 
-        Keyword arguments:
+        Keyword arguments
+        -----------------
         incubation_period: Union[int, float, np.ndarray]
             Incubation period of the disease in days. If an array,
             it should be the incubation period for each population compartment.
@@ -93,7 +95,7 @@ class SEIR:
             from the function's output.
         imported_cases_function: Optional[Callable] = None):
         """
-        # Set a single age group if nothing was provided
+        # Set a single compartment if nothing was provided
         if compartments:
             self.compartments = compartments
         else:
@@ -114,12 +116,15 @@ class SEIR:
         self.icu_lag_from_onset = icu_lag_from_onset
         self.death_probability = self._fix_size(death_probability)
         self.death_lag_from_onset = death_lag_from_onset
+
+        # Sanity checking on the population argument
         if isinstance(population, (int, float)):
             assert self.num_compartments == 1
         elif isinstance(population, np.ndarray):
             assert population.size == self.num_compartments
         self.population = self._fix_size(population)
 
+        # Sanity checking on the contacts_matrix argument
         if contacts_matrix:
             assert contacts_matrix.shape[0] == len(self.compartments)
             assert contacts_matrix.shape[1] == len(self.compartments)
@@ -133,20 +138,49 @@ class SEIR:
         self.restrictions_function = restrictions_function
         self.imported_cases_function = imported_cases_function
 
+        # Initial state
         self.Y0: Optional[np.ndarray] = None
+
+        # Computed solution
         self.SEIR_solution = None
 
     def _compute_infectivity_matrix(self,
                                     contacts_matrix: np.ndarray) -> np.ndarray:
+        """
+        Computes and returns the infectivity matrix $\mathcal{I}_{a,a^*}$ from the contacts matrix,
+        R_0, and infective duration.
 
-        normalization = 1 / self.infectious_period * self.initial_R0 * self.population.sum(
-        ) / (self.population @ contacts_matrix).sum()
+        See https://covid19.solanpaa.fi/#infectivity-rate for details.
+
+        Input
+        -----
+        contacts_matrix: np.ndarray
+            A matrix C[i,j] describing the daily number of contacts a person of
+            compartment 'i' has with the population of compartment 'j'.
+
+        Output
+        ------
+        infectivity_matrix: np.ndarray
+        """
+        normalization = 1 / self.infectious_period *\
+             self.initial_R0 * self.population.sum() / (self.population @ contacts_matrix).sum()
         return normalization * contacts_matrix
 
     def _fix_size(self, x: Union[np.ndarray, float, int]) -> np.ndarray:
         """
         Fixes the size of the input to have
-        the same size as there are age groups
+        the same size as there are compartments.
+
+        Input
+        -----
+        x: Union[np.ndarray, float, int]
+            The input parameter
+
+        Output
+        ------
+        np.ndarray:
+            the output array with same size as there are
+            compartments in the model
         """
         if isinstance(x, (int, float)):
             return np.ones(self.num_compartments) * x
@@ -157,6 +191,23 @@ class SEIR:
     def __call__(self, t, Y):
         """
         Computes dY/dt of the SEIR model.
+
+        Input
+        -----
+        t: float
+            Time
+        Y: np.ndarray
+            The state of the system at time `t`, i.e.,
+            Y = [S_0, S_1, ..., S_{N-1},
+                 E_0, E_1, ..., E_{N-1},
+                 I_0, I_1, ..., I_{N-1},
+                 R_0, R_1, ..., R_{N-1}],
+            where N is the number of compartments, and S_i, E_i, I_i, R_i
+            are the number of susceptible, exposed, infected, and removed
+            people at time `t` of the compartment `i`.
+        Output
+        ------
+        dY/dt : np.ndarray with same shape as the input `Y`
         """
         if self.restrictions_function:
             infectivity_matrix = np.multiply(restrictions_function(t),
@@ -185,7 +236,40 @@ class SEIR:
             population_exposed: Union[int, float, np.ndarray],
             population_infected: Union[int, float, np.ndarray],
             probabilities: bool = False):
+        """
+        Sets the initial state of the population system.
 
+        Input
+        -----
+        population_susceptible: Union[int, float, np.ndarray]
+            If `probabilities` is True, this is the probability
+            (or probabilities for each compartment) that a person
+            is initially in the Susceptible state.
+
+            If `probabilities` is False, this is the
+            number (or numbers for each compartment) of
+            persons is initially in the Susceptible state.
+        population_exposed:
+            If `probabilities` is True, this is the probability
+            (or probabilities for each compartment) that a person
+            is initially in the Exposed state.
+
+            If `probabilities` is False, this is the
+            number (or numbers for each compartment) of
+            persons is initially in the Exposed state.
+        population_infected:
+            If `probabilities` is True, this is the probability
+            (or probabilities for each compartment) that a person
+            is initially in the Infected state.
+
+            If `probabilities` is False, this is the
+            number (or numbers for each compartment) of
+            persons is initially in the Infected state.
+        probabilities: bool, optional
+            If True, the previous arguments are interpreted as
+            probabilities. If False, they are interpreted as
+            the number of people.
+        """
         if probabilities:
             S = np.multiply(population_susceptible, self.population)
             E = np.multiply(population_exposed, self.population)
@@ -205,7 +289,8 @@ class SEIR:
                 E = population_exposed
 
             if isinstance(population_infected, (int, float)):
-                I = self._fix_sizes(population_infected) / self.num_compartments
+                I = self._fix_sizes(
+                    population_infected) / self.num_compartments
             elif isinstance(population_infected, np.ndarray):
                 assert population_infected.size == self.num_compartments
                 I = population_infected
@@ -215,6 +300,15 @@ class SEIR:
         self.Y0 = np.concatenate([S, E, I, R])
 
     def simulate(self, days_to_simulate: Union[int, float]):
+        """
+        Simulates the SEIR model.
+
+        Input
+        -----
+        days_to_simulate: Union[int, float]
+            How many days forward to simulate the model
+        """
+        assert self.Y0 is not None
 
         solution = solve_ivp(fun=self,
                              t_span=[0, days_to_simulate],
@@ -223,6 +317,7 @@ class SEIR:
                              max_step=0.5,
                              method='DOP853')
 
+        # Create a callable returning the solution of the model
         def SEIR_solution(time: np.ndarray):
             postime_mask = time >= 0
 
@@ -234,8 +329,22 @@ class SEIR:
 
         self.SEIR_solution = SEIR_solution
 
-    def evaluate_solution(self, time):
+    def evaluate_solution(self, time: np.ndarray):
+        """
+        Evaluates the results of a previously computed simulation.
+
+        Input
+        -----
+        time: np.ndarray
+            Time instances for which to evaluate the simulated model
+
+        Returns
+        -------
+        pd.DataFrame
+        """
         # Evaluate SEIR model results
+        assert self.SEIR_solution is not None
+
         SEIR = self.SEIR_solution(time)
         S, E, I, R = np.split(SEIR, 4, axis=-1)
 
@@ -276,7 +385,13 @@ class SEIR:
             self.death_probability,
             np.divide(E_death_lag, self.incubation_period))
         deaths = np.cumsum(DEATH_new_cases_a_day, axis=0)
-        return S, E, I, R, H_active_cases, ICU_active_cases, deaths
+
+        data = np.concatenate([np.expand_dims(time, -1), S, E, I, Icumulative, R, H_active_cases, ICU_active_cases, deaths],axis=-1)
+        columns = ['susceptible', 'exposed', 'infected (active)', 'infected (total)', 'removed', 'hospitalized (active)', 'in ICU', 'deaths (total)']
+        all_columns = ['time']+list(itertools.product(columns, self.compartments))
+        return pd.DataFrame(
+            data, columns=all_columns
+        )
 
 
 if __name__ == '__main__':
@@ -292,7 +407,7 @@ if __name__ == '__main__':
                  icu_lag_from_onset=21,
                  death_probability=0.1,
                  death_lag_from_onset=27,
-                 compartments=[(1, 5), (5, 10)],
+                 compartments=['G1', 'G2'],
                  population=np.array([2.5e6, 1e6]))
 
     model.set_initial_state(population_susceptible=0.99,
@@ -303,8 +418,8 @@ if __name__ == '__main__':
     model.simulate(200)
 
     time = np.arange(0, 200, 1, dtype=int)
-    S, E, I, R, H_active_cases, ICU_active_cases, deaths = model.evaluate_solution(time)
-
+    results = model.evaluate_solution(time)
+    import pdb; pdb.set_trace()
     import matplotlib.pyplot as plt
-    plt.plot(time, I)
+    plt.plot(time, results)
     plt.show()
