@@ -1,4 +1,3 @@
-import datetime
 import argparse
 import sys
 
@@ -52,7 +51,7 @@ def main(contacts_matrix_file, output_file):
 
     # Visualize the results
     visualize_seir_computation(results,
-                               show_individual_compartments = True)
+                               show_individual_compartments=True)
 
 
 if __name__ == '__main__':
