@@ -51,11 +51,11 @@ setup(
     },
     data_files=[],
     description="Modeling of epidemics using the SEIR model",
-#    entry_points = {
-#        'console_scripts': [
-#            'fin-traffic-fetch-raw-data = fin_traffic_data.scripts.fetch_raw_data:main'
-#        ]
-#    },
+    entry_points = {
+        'console_scripts': [
+            'seir-model = seir.scripts.cli:main'
+        ]
+    },
     install_requires=get_requirements(),
     license=my_pkg.__license__,
     long_description=read('README.rst'),
