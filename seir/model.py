@@ -121,6 +121,9 @@ class SEIR:
         # Sanity checking on the population argument
         if isinstance(population, (int, float)):
             assert self.num_compartments == 1
+        elif isinstance(population, list):
+            population = np.array(population)
+            assert population.size == self.num_compartments
         elif isinstance(population, np.ndarray):
             assert population.size == self.num_compartments
         self.population = self._fix_size(population)
@@ -145,6 +148,96 @@ class SEIR:
         # Computed solution
         self.SEIR_solution = None
 
+    def update_parameters(
+            self,
+            *,
+            incubation_period: Optional[Union[int, float, np.ndarray]] = None,
+            infectious_period: Optional[Union[int, float, np.ndarray]] = None,
+            initial_R0: Optional[Union[int, float]] = None,
+            hospitalization_probability: Optional[
+                Union[float, np.ndarray]] = None,
+            hospitalization_duration: Optional[
+                Union[float, np.ndarray]] = None,
+            hospitalization_lag_from_onset: Optional[
+                Union[float, np.ndarray]] = None,
+            icu_probability: Optional[Union[float, np.ndarray]] = None,
+            icu_duration: Optional[Union[float, np.ndarray]] = None,
+            icu_lag_from_onset: Optional[Union[float, np.ndarray]] = None,
+            death_probability: Optional[Union[float, np.ndarray]] = None,
+            death_lag_from_onset: Optional[Union[float, np.ndarray]] = None,
+            population: Optional[Union[float, np.ndarray]] = None,
+            compartments: Optional[List[Any]] = None,
+            contacts_matrix: Optional[np.ndarray] = None,
+            restrictions_function: Optional[
+                Callable[[float], Union[float, np.ndarray]]] = None,
+            imported_cases_function: Optional[Callable] = None):
+        """
+        Initializes the SEIR models parameters and computes the infectivity
+        rate from the contacts matrix, R0, and infective_duration. Supports
+        compartmentalizing the population to, e.g., age-groups.
+
+        Keyword arguments
+        -----------------
+        incubation_period: Optional[Union[int, float, np.ndarray]]
+            Incubation period of the disease in days. If an array,
+            it should be the incubation period for each population compartment.
+        infectious_period: Union[int, float, np.ndarray]
+            How long a patient can infect others (in days). If an array,
+            it should be the infectious period for each population compartment.
+        initial_R0: Union[int, float]
+            Basic reproductive number of the disease
+        hospitalization_probability: Union[float, np.ndarray]
+            Probability that an infected person needs hospitalization.
+            If an array, it should be the hospitalization probability
+            for each population compartment.
+        hospitalization_duration: Union[float, np.ndarray]
+            Average duration of a hospitalization in days. If an array,
+            it should be the average hospitalization durations for each
+            population compartment.
+        hospitalization_lag_from_onset: Union[float, np.ndarray]
+            Average time from the onset of symptoms to admission to hospital.
+            If an array, it should be the average time to hospitalization for
+            each population compartment.
+        icu_probability: Union[float, np.ndarray]
+            Probability that an infected person needs hospitalization.
+            If an array, it should be the probability for each population
+            compartment.
+        icu_duration: Union[float, np.ndarray]
+            Average duration of the need for intensive care in days.
+            If an array, it should be the average durations for each population
+            compartment.
+        icu_lag_from_onset: Union[float, np.ndarray]
+            Average time from the onset of symptoms to admission to ICU.
+            If an array, it should be the average time to intensive care for
+            each population compartment.
+        death_probability: Union[float, np.ndarray]
+            Probability that an infected person dies from the disease.
+            If an array, it should be the probability for each population
+            compartment.
+        death_lag_from_onset: Union[float, np.ndarray]
+            Average time from the onset of symptoms to death
+            If an array, it should be the average time to death for
+            each population compartment.
+        population: Union[int, float, np.ndarray]
+            The total population. If an array, it should be the number of
+            people in each population compartment.
+        compartments: Optional[List[Any]]
+            A description of each compartment of the population.
+            For age-compartmentalized population this could be a list of
+            the age for each compartment, e.g.,
+            [ (0, 5), (5,10), (10,40), (40, 150), (150, 'inf') ]
+        contacts_matrix: Optional[np.ndarray]
+            A matrix C[i,j] describing the daily number of contacts a person of
+            compartment 'i' has with the population of compartment 'j'.
+        restrictions_function: Optional[Callable[[float],
+                                        Union[float, np.ndarray]]]
+            A function with signature `fun(time)` that outputs a matrix of
+            the same shape as `contacts_matrix` or a float. At each
+            timestep the `restrictions_function` is used to augment
+            the infectivity rate matrix by a Hadamard product
+            from the function's output.
+        imported_cases_function: Optional[Callable] = None):
+        """
     def _compute_infectivity_matrix(self,
                                     contacts_matrix: np.ndarray) -> np.ndarray:
         """
@@ -183,6 +276,9 @@ class SEIR:
             the output array with same size as there are
             compartments in the model
         """
+        if isinstance(x, list):
+            x = np.array(x)
+
         if isinstance(x, (int, float)):
             return np.ones(self.num_compartments) * x
         else:
@@ -456,7 +552,7 @@ if __name__ == '__main__':
     model = SEIR(incubation_period=3,
                  infectious_period=7,
                  initial_R0=2.3,
-                 hospitalization_probability=0.01,
+                 hospitalization_probability=[0.01, 0, 0, 0, 0.2],
                  hospitalization_duration=21,
                  hospitalization_lag_from_onset=6,
                  icu_probability=0.001,
@@ -464,8 +560,9 @@ if __name__ == '__main__':
                  icu_lag_from_onset=21,
                  death_probability=0.1,
                  death_lag_from_onset=27,
-                 compartments=['G1', 'G2'],
-                 population=np.array([2.5e6, 1e6]))
+                 compartments=['G1', 'G2', 'G3', 'G4', 'G5'],
+                 population=[2.5e6, 1e6, 3e5, 5e4, 4e5]
+                                    )
 
     model.set_initial_state(population_susceptible=0.99,
                             population_exposed=0.005,
@@ -476,8 +573,6 @@ if __name__ == '__main__':
 
     time = np.arange(0, 200, 1, dtype=int)
     results = model.evaluate_solution(time)
-    import pdb
-    pdb.set_trace()
     import matplotlib.pyplot as plt
     plt.plot(time, results)
     plt.show()
