@@ -21,7 +21,6 @@ WD = os.path.dirname(__file__)
 @click.option('--visualize-compartments', type=bool, default=True)
 @click.option('--output_file',
               type=str,
-              default='output.csv',
               help='Path to output file.')
 def main(config_file, contacts_matrix_file, visualize_compartments,
          output_file):
@@ -53,6 +52,7 @@ def main(config_file, contacts_matrix_file, visualize_compartments,
     results = model.evaluate_solution(time)
 
     # Save data
+    output_file = output_file or os.path.basename(config_file + ".csv")
     results.to_csv(output_file)
 
     # Visualize the results
