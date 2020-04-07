@@ -34,8 +34,7 @@ def _plot_compartment_subplot(ax, observable, results):
 
 def visualize_seir_computation(results: pd.DataFrame,
                                compartments: List[Any],
-                               show_individual_compartments=False
-                              ):
+                               show_individual_compartments=False):
     """Visualizes the SEIR computation"""
 
     if show_individual_compartments:
