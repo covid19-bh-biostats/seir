@@ -1,6 +1,5 @@
 import argparse
 import configparser
-import sys
 
 import numpy as np
 
@@ -50,6 +49,7 @@ def main(config_file, contacts_matrix_file, output_file):
     results = model.evaluate_solution(time)
 
     # Save data
+    output_file = output_file or config_file + ".csv"
     results.to_csv(output_file)
 
     # Visualize the results
@@ -61,6 +61,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Modeling epidemics using the SEIR model')
     parser.add_argument('config_file', type=str, help='File path to config ini file')
     parser.add_argument('-c', dest="contacts_matrix_file", type=str, help='File path to contact matrix file')
-    parser.add_argument('-o', dest="output_file", default="outfile.csv", type=str, help='Output file name')
-    args = parser.parse_args(sys.argv[1:])
+    parser.add_argument('-o', dest="output_file", type=str, help='Output file name')
+    args = parser.parse_args()
     main(args.config_file, args.contacts_matrix_file, args.output_file)
