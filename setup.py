@@ -34,10 +34,10 @@ with open('requirements.txt') as f:
 
 setup_requirements = ['pytest-runner', ]
 
-test_requirements = ['pytest>=3', ]
+test_requirements = ['pytest>=3']
 
 setup(
-    author="Lukas Heumos",
+    author="Biostats team",
     author_email='lukas.heumos@posteo.net',
     python_requires='>=3.5',
     classifiers=[
@@ -73,6 +73,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/covid19-bh-biostats/seir',
-    version='0.1.0',
+    version='0.1.1',
     zip_safe=False,
 )
