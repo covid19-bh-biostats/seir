@@ -1,0 +1,19 @@
+[model]
+population = 5e6
+incubation_period = 3
+infectious_period = 7
+initial_R0 = 2.5
+hospitalization_probability = 0.1
+hospitalization_duration = 20
+hospitalization_lag_from_onset = 7
+icu_probability = 0.01
+icu_duration = 10
+icu_lag_from_onset = 11
+death_probability = 0.1
+death_lag_from_onset = 25
+
+[initial state]
+population_susceptible = 0.99
+population_exposed = 0.005
+population_infected = 0.005
+probabilities = True
