@@ -18,22 +18,23 @@ WD = os.path.dirname(__file__)
 @click.option('--contacts_matrix_file',
               type=click.Path(exists=True),
               help='Path to contact matrix file')
-@click.option('--visualize-compartments',
-              type=bool,
-              default=True)
+@click.option('--visualize-compartments', type=bool, default=True)
 @click.option('--output_file',
               type=str,
               default='output.csv',
               help='Path to output file.')
-def main(config_file, contacts_matrix_file, visualize_compartments, output_file):
+def main(config_file, contacts_matrix_file, visualize_compartments,
+         output_file):
     """Console script for SEIR."""
     # TODO: Handle somehow the creation of a restrictions function
     # TODO: Handle somehow the creation of an imports function
     # Setup the model
     if not config_file:
-        kwargs, initial_state_kwargs, sim_kwargs = parse_config_ini(f'{WD}/model_configs/finland')
+        kwargs, initial_state_kwargs, sim_kwargs = parse_config_ini(
+            f'{WD}/model_configs/finland')
     else:
-        kwargs, initial_state_kwargs, sim_kwargs = parse_config_ini(config_file)
+        kwargs, initial_state_kwargs, sim_kwargs = parse_config_ini(
+            config_file)
 
     if contacts_matrix_file:
         with open(contacts_matrix_file) as contacts_matrix_file:
@@ -55,9 +56,10 @@ def main(config_file, contacts_matrix_file, visualize_compartments, output_file)
     results.to_csv(output_file)
 
     # Visualize the results
-    visualize_seir_computation(results,
-                               compartments=kwargs['compartments'],
-                               show_individual_compartments=visualize_compartments)
+    visualize_seir_computation(
+        results,
+        compartments=kwargs['compartments'],
+        show_individual_compartments=visualize_compartments)
 
 
 if __name__ == "__main__":
