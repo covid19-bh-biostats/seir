@@ -21,7 +21,19 @@ def parse_config_ini(config_file):
                 kwargs[key] = [float(x) for x in value.split(",")]
         else:
             kwargs[key] = float(value)
-    return kwargs
+    initial_state_kwargs = {}
+    for key, value in config.items("initial state"):
+        if "," in value:
+            initial_state_kwargs[key] = [float(x) for x in value.split(",")]
+        else:
+            try:
+                initial_state_kwargs[key] = float(value)
+            except:
+                try:
+                    initial_state_kwargs[key] = bool(value)
+                except:
+                    raise ValueError
+    return kwargs, initial_state_kwargs
 
 
 def _main_core(config_file, contacts_matrix_file, output_file,
@@ -29,7 +41,7 @@ def _main_core(config_file, contacts_matrix_file, output_file,
     # TODO: Handle somehow the creation of a restrictions function
     # TODO: Handle somehow the creation of an imports function
     # Setup the model
-    kwargs = parse_config_ini(config_file)
+    kwargs, initial_state_kwargs = parse_config_ini(config_file)
 
     if contacts_matrix_file:
         with open(contacts_matrix_file) as contacts_matrix_file:
@@ -39,10 +51,7 @@ def _main_core(config_file, contacts_matrix_file, output_file,
     model = SEIR(**kwargs)
 
     # Setup initial state
-    model.set_initial_state(population_susceptible=0.99,
-                            population_exposed=0.005,
-                            population_infected=0.005,
-                            probabilities=True)
+    model.set_initial_state(**initial_state_kwargs)
 
     # Simulate up to 200 days
     model.simulate(200)
