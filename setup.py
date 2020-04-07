@@ -64,6 +64,6 @@ setup(
     python_requires='>=3.7',
     test_suite='nose2.collector.collector',
     tests_require=['nose2', 'mypy'],
-    url='https://covid19.solanpaa.fi',
+    url='https://https://github.com/covid19-bh-biostats/seir',
     version=my_pkg.__version__,
     zip_safe=True)
