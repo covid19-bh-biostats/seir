@@ -16,13 +16,13 @@ class SEIR:
                  infectious_period: Union[int, float, np.ndarray],
                  initial_R0: Union[int, float],
                  hospitalization_probability: Union[float, np.ndarray],
-                 hospitalization_duration: Union[float, np.ndarray],
-                 hospitalization_lag_from_onset: Union[float, np.ndarray],
-                 icu_probability: Union[float, np.ndarray],
-                 icu_duration: Union[float, np.ndarray],
+                 hospitalization_duration: Union[float, int],
+                 hospitalization_lag_from_onset: Union[float, int],
+                 icu_probability: Union[float, int],
+                 icu_duration: Union[float, int],
                  icu_lag_from_onset: Union[float, np.ndarray],
                  death_probability: Union[float, np.ndarray],
-                 death_lag_from_onset: Union[float, np.ndarray],
+                 death_lag_from_onset: Union[float, int],
                  population: Union[float, np.ndarray],
                  compartments: Optional[List[Any]] = None,
                  contacts_matrix: Optional[np.ndarray] = None,
@@ -48,34 +48,24 @@ class SEIR:
             Probability that an infected person needs hospitalization.
             If an array, it should be the hospitalization probability
             for each population compartment.
-        hospitalization_duration: Union[float, np.ndarray]
-            Average duration of a hospitalization in days. If an array,
-            it should be the average hospitalization durations for each
-            population compartment.
-        hospitalization_lag_from_onset: Union[float, np.ndarray]
+        hospitalization_duration: Union[float, int]
+            Average duration of a hospitalization in days.
+        hospitalization_lag_from_onset: Union[float, int]
             Average time from the onset of symptoms to admission to hospital.
-            If an array, it should be the average time to hospitalization for
-            each population compartment.
         icu_probability: Union[float, np.ndarray]
             Probability that an infected person needs hospitalization.
             If an array, it should be the probability for each population
             compartment.
-        icu_duration: Union[float, np.ndarray]
+        icu_duration: Union[float, int]
             Average duration of the need for intensive care in days.
-            If an array, it should be the average durations for each population
-            compartment.
-        icu_lag_from_onset: Union[float, np.ndarray]
+        icu_lag_from_onset: Union[float, int]
             Average time from the onset of symptoms to admission to ICU.
-            If an array, it should be the average time to intensive care for
-            each population compartment.
         death_probability: Union[float, np.ndarray]
             Probability that an infected person dies from the disease.
             If an array, it should be the probability for each population
             compartment.
-        death_lag_from_onset: Union[float, np.ndarray]
+        death_lag_from_onset: Union[float, int]
             Average time from the onset of symptoms to death
-            If an array, it should be the average time to death for
-            each population compartment.
         population: Union[int, float, np.ndarray]
             The total population. If an array, it should be the number of
             people in each population compartment.
