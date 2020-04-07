@@ -32,13 +32,13 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/homersimpson/SEIR
+    $ git clone git://github.com/covid19-bh-biostats/SEIR
 
 Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl -OJL https://github.com/homersimpson/SEIR/tarball/master
+    $ curl -OJL https://github.com/covid19-bh-biostats/SEIR/tarball/master
 
 Once you have a copy of the source, you can install it with:
 
@@ -47,5 +47,5 @@ Once you have a copy of the source, you can install it with:
     $ python setup.py install
 
 
-.. _Github repo: https://github.com/homersimpson/SEIR
-.. _tarball: https://github.com/homersimpson/SEIR/tarball/master
+.. _Github repo: https://github.com/covid19-bh-biostats/SEIR
+.. _tarball: https://github.com/covid19-bh-biostats/SEIR/tarball/master
