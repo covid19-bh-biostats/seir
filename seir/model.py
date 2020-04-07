@@ -117,7 +117,6 @@ class SEIR:
         self.icu_lag_from_onset = icu_lag_from_onset
         self.death_probability = self._fix_size(death_probability)
         self.death_lag_from_onset = death_lag_from_onset
-
         # Sanity checking on the population argument
         if isinstance(population, (int, float)):
             assert self.num_compartments == 1
@@ -129,7 +128,7 @@ class SEIR:
         self.population = self._fix_size(population)
 
         # Sanity checking on the contacts_matrix argument
-        if contacts_matrix and contacts_matrix.any():
+        if contacts_matrix is not None:
             assert contacts_matrix.shape[0] == len(self.compartments)
             assert contacts_matrix.shape[1] == len(self.compartments)
         else:

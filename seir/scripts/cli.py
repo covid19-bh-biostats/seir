@@ -45,9 +45,8 @@ def _main_core(config_file, contacts_matrix_file, output_file,
 
     if contacts_matrix_file:
         with open(contacts_matrix_file) as contacts_matrix_file:
-            kwargs["contacts_matrix"] = np.fromfile(contacts_matrix_file,
-                                                    dtype=np.int32)
-    print(kwargs["contacts_matrix"])
+            kwargs["contacts_matrix"] = np.loadtxt(contacts_matrix_file)
+
     model = SEIR(**kwargs)
 
     # Setup initial state
@@ -65,7 +64,9 @@ def _main_core(config_file, contacts_matrix_file, output_file,
 
     # Visualize the results
     visualize_seir_computation(
-        results, show_individual_compartments=visualize_compartments)
+        results,
+        compartments=kwargs['compartments'],
+        show_individual_compartments=visualize_compartments)
 
 
 def main():
