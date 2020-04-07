@@ -15,6 +15,7 @@ def parse_config_ini(config_file):
     kwargs = {}
     for key, value in config.items("model"):
         if "," in value:
+            value = value.replace('\n', '').replace('\t', '')
             if key == "compartments":
                 kwargs[key] = value.split(",")
             else:
