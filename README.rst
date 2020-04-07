@@ -2,6 +2,11 @@
 SEIR
 ====
 
+.. image:: https://github.com/covid19-bh-biostats/seir/workflows/Build%20SEIR%20Package/badge.svg
+        :alt: Build SEIR Package
+
+.. image:: https://github.com/covid19-bh-biostats/seir/workflows/Run%20SEIR%20Tox%20Test%20Suite/badge.svg
+        :alt: Run Tests
 
 .. image:: https://img.shields.io/pypi/v/SEIR.svg
         :target: https://pypi.python.org/pypi/SEIR
