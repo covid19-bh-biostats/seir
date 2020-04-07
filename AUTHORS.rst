@@ -2,12 +2,8 @@
 Credits
 =======
 
-Development Lead
-----------------
+Biohackathon Biostats Team
+--------------------------
 
+* Janne Solanpää <janne@solanpaa.fi>
 * Lukas Heumos <lukas.heumos@posteo.net>
-
-Contributors
-------------
-
-None yet. Why not be the first?
