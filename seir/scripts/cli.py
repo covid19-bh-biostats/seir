@@ -24,7 +24,7 @@ def parse_config_ini(config_file):
     return kwargs
 
 
-def main(config_file, contacts_matrix_file, output_file):
+def _main_core(config_file, contacts_matrix_file, output_file, visualize_compartments):
     # TODO: Handle somehow the creation of a restrictions function
     # TODO: Handle somehow the creation of an imports function
     # Setup the model
@@ -32,7 +32,8 @@ def main(config_file, contacts_matrix_file, output_file):
 
     if contacts_matrix_file:
         with open(contacts_matrix_file) as contacts_matrix_file:
-            kwargs["contacts_matrix"] = np.fromfile(contacts_matrix_file, dtype=np.int32)
+            kwargs["contacts_matrix"] = np.fromfile(contacts_matrix_file,
+                                                    dtype=np.int32)
 
     model = SEIR(**kwargs)
 
@@ -53,14 +54,28 @@ def main(config_file, contacts_matrix_file, output_file):
     results.to_csv(output_file)
 
     # Visualize the results
-    visualize_seir_computation(results,
-                               show_individual_compartments=True)
+    visualize_seir_computation(results, show_individual_compartments=visualize_compartments)
 
+def main():
+    parser = argparse.ArgumentParser(
+        description='Modeling epidemics using the SEIR model')
+    parser.add_argument('config_file',
+                        type=str,
+                        help='File path to config ini file')
+    parser.add_argument('-c',
+                        dest="contacts_matrix_file",
+                        type=str,
+                        help='File path to contact matrix file')
+    parser.add_argument('--visualize-compartments',
+                        action='store_true',
+                        help='Visualize dynamics of individual compartments.')
+    parser.add_argument('-o',
+                        dest="output_file",
+                        default="outfile.csv",
+                        type=str,
+                        help='Output file name')
+    args = parser.parse_args()
+    _main_core(args.config_file, args.contacts_matrix_file, args.output_file, args.visualize_compartments)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Modeling epidemics using the SEIR model')
-    parser.add_argument('config_file', type=str, help='File path to config ini file')
-    parser.add_argument('-c', dest="contacts_matrix_file", type=str, help='File path to contact matrix file')
-    parser.add_argument('-o', dest="output_file", default="outfile.csv", type=str, help='Output file name')
-    args = parser.parse_args(sys.argv[1:])
-    main(args.config_file, args.contacts_matrix_file, args.output_file)
+    main()
