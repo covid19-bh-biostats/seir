@@ -257,7 +257,10 @@ class SEIR:
         """
         normalization = 1 / self.infectious_period *\
              self.initial_R0 * self.population.sum() / (self.population @ contacts_matrix).sum()
-        return normalization * contacts_matrix
+        # Symmetrize the contact matrix here since if
+        # compartment 'i' has contacts with compartment 'j',
+        # it should also be vice versa
+        return normalization * 0.5*(contacts_matrix+contacts_matrix.T)
 
     def _fix_size(self, x: Union[np.ndarray, float, int]) -> np.ndarray:
         """
