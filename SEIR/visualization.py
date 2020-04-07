@@ -1,3 +1,5 @@
+from typing import Any, List
+
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from matplotlib.ticker import EngFormatter
@@ -31,10 +33,10 @@ def _plot_compartment_subplot(ax, observable, results):
 
 
 def visualize_seir_computation(results: pd.DataFrame,
-                               show_individual_compartments=False):
+                               compartments: List[Any],
+                               show_individual_compartments=False
+                              ):
     """Visualizes the SEIR computation"""
-    compartments = np.unique(
-        [v[1] for v in results.columns.values if isinstance(v, tuple)])
 
     if show_individual_compartments:
         w, h = plt.figaspect(2)
@@ -56,8 +58,7 @@ def visualize_seir_computation(results: pd.DataFrame,
         lines = _plot_compartment_subplot(ax, 'deaths', results)
 
         ax.yaxis.set_major_formatter(EngFormatter())
-        gsp = GridSpecFromSubplotSpec(5, 1, gs[1])
-        ax = fig.add_subplot(gsp[2])
+        ax = fig.add_subplot(gs[1])
         ax.legend(lines, compartments)
         ax.set_xticks(())
         ax.set_yticks(())

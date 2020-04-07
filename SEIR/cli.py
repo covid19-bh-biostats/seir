@@ -55,6 +55,7 @@ def main(config_file, contacts_matrix_file, output_file):
 
     # Visualize the results
     visualize_seir_computation(results,
+                               compartments=kwargs['compartments'],
                                show_individual_compartments=True)
 
 
