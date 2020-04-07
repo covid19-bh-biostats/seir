@@ -2,5 +2,5 @@
 Modules
 =======
 
-.. automodapi:: SEIR.SEIR
+.. automodapi:: SEIR
 
