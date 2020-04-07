@@ -28,11 +28,11 @@ def parse_config_ini(config_file):
         else:
             try:
                 initial_state_kwargs[key] = float(value)
-            except:
+            except Exception as e:
                 try:
                     initial_state_kwargs[key] = bool(value)
-                except:
-                    raise ValueError
+                except Exception as e:
+                    raise e
     return kwargs, initial_state_kwargs
 
 
@@ -47,7 +47,7 @@ def _main_core(config_file, contacts_matrix_file, output_file,
         with open(contacts_matrix_file) as contacts_matrix_file:
             kwargs["contacts_matrix"] = np.fromfile(contacts_matrix_file,
                                                     dtype=np.int32)
-
+    print(kwargs["contacts_matrix"])
     model = SEIR(**kwargs)
 
     # Setup initial state
