@@ -39,7 +39,8 @@ setup(
     author=my_pkg.__author__,
     author_email=my_pkg.__author_email__,
     classifiers=[
-        'Development Status :: 1 - Alpha', 'Environment :: Console',
+        'Development Status :: 3 - Alpha',
+        'Environment :: Console',
         'Intended Audience :: Developers',
         'License :: Other/Proprietary License',
         'Operating System :: OS Independent',
