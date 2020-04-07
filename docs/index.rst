@@ -7,7 +7,6 @@ Welcome to SEIR's documentation!
    readme
    installation
    usage
-   modules
    authors
    changelog
    codeofconduct
