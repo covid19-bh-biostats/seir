@@ -137,7 +137,7 @@ class SEIR:
         self.Y0: Optional[np.ndarray] = None
 
         # Computed solution
-        self.SEIR_solution = None
+        self.SEIR_solution: Optional[Callable[[np.ndarray],np.ndarray]] = None
 
     def update_parameters(
         self,
@@ -358,13 +358,13 @@ class SEIR:
         else:
 
             if isinstance(population_exposed, (int, float)):
-                E = self._fix_sizes(population_exposed) / self.num_compartments
+                E = self._fix_size(population_exposed) / self.num_compartments
             elif isinstance(population_exposed, np.ndarray):
                 assert population_exposed.size == self.num_compartments
                 E = population_exposed
 
             if isinstance(population_infected, (int, float)):
-                I = self._fix_sizes(
+                I = self._fix_size(
                     population_infected) / self.num_compartments
             elif isinstance(population_infected, np.ndarray):
                 assert population_infected.size == self.num_compartments

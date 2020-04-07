@@ -1,5 +1,5 @@
 """Top-level package for SEIR."""
 
-__author__ = """Lukas Heumos"""
+__author__ = """Biostats team"""
 __email__ = 'lukas.heumos@posteo.net'
-__version__ = '0.1.0'
+__version__ = '0.1.1'
