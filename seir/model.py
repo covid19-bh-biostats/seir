@@ -129,7 +129,7 @@ class SEIR:
         self.population = self._fix_size(population)
 
         # Sanity checking on the contacts_matrix argument
-        if contacts_matrix:
+        if contacts_matrix and contacts_matrix.any():
             assert contacts_matrix.shape[0] == len(self.compartments)
             assert contacts_matrix.shape[1] == len(self.compartments)
         else:
@@ -490,7 +490,7 @@ class SEIR:
             axis=-1)
         H_new_cases_a_day = np.multiply(self.hospitalization_probability,
                                         np.divide(Ehl, self.incubation_period))
-        Hwindow = np.ones(self.hospitalization_duration)
+        Hwindow = np.ones(round(self.hospitalization_duration))
         H_active_cases = np.stack([
             np.convolve(H_new_cases_a_day[:, i], Hwindow, mode='same')
             for i in range(self.num_compartments)
@@ -502,7 +502,7 @@ class SEIR:
         E_icu_lag = np.split(SEIR_icu_lag, 4, axis=-1)[2]
         ICU_new_cases_a_day = np.multiply(
             self.icu_probability, np.divide(E_icu_lag, self.incubation_period))
-        ICUwindow = np.ones(self.icu_duration)
+        ICUwindow = np.ones(round(self.icu_duration))
         ICU_active_cases = np.stack([
             np.convolve(ICU_new_cases_a_day[:, i], Hwindow, mode='same')
             for i in range(self.num_compartments)
