@@ -508,7 +508,7 @@ class SEIR:
             self.icu_probability, np.divide(E_icu_lag, self.incubation_period))
         ICUwindow = np.ones(round(self.icu_duration))
         ICU_active_cases = np.stack([
-            np.convolve(ICU_new_cases_a_day[:, i], Hwindow, mode='same')
+            np.convolve(ICU_new_cases_a_day[:, i], ICUwindow, mode='same')
             for i in range(self.num_compartments)
         ],
                                     axis=-1)
