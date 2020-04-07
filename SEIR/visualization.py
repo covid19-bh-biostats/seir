@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 import matplotlib.cm as cm
 from matplotlib.ticker import EngFormatter
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec

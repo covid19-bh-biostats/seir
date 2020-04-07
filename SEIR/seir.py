@@ -1,5 +1,6 @@
+"""Main module."""
 import itertools
-from typing import Any, Callable, List, Tuple, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 import numpy as np
 from scipy.integrate import solve_ivp
@@ -10,6 +11,7 @@ class SEIR:
     """
     Implementation of a SEIR model
     """
+
     def __init__(self,
                  *,
                  incubation_period: Union[int, float, np.ndarray],
@@ -149,28 +151,28 @@ class SEIR:
         self.SEIR_solution = None
 
     def update_parameters(
-            self,
-            *,
-            incubation_period: Optional[Union[int, float, np.ndarray]] = None,
-            infectious_period: Optional[Union[int, float, np.ndarray]] = None,
-            initial_R0: Optional[Union[int, float]] = None,
-            hospitalization_probability: Optional[
-                Union[float, np.ndarray]] = None,
-            hospitalization_duration: Optional[
-                Union[float, np.ndarray]] = None,
-            hospitalization_lag_from_onset: Optional[
-                Union[float, np.ndarray]] = None,
-            icu_probability: Optional[Union[float, np.ndarray]] = None,
-            icu_duration: Optional[Union[float, np.ndarray]] = None,
-            icu_lag_from_onset: Optional[Union[float, np.ndarray]] = None,
-            death_probability: Optional[Union[float, np.ndarray]] = None,
-            death_lag_from_onset: Optional[Union[float, np.ndarray]] = None,
-            population: Optional[Union[float, np.ndarray]] = None,
-            compartments: Optional[List[Any]] = None,
-            contacts_matrix: Optional[np.ndarray] = None,
-            restrictions_function: Optional[
-                Callable[[float], Union[float, np.ndarray]]] = None,
-            imported_cases_function: Optional[Callable] = None):
+        self,
+        *,
+        incubation_period: Optional[Union[int, float, np.ndarray]] = None,
+        infectious_period: Optional[Union[int, float, np.ndarray]] = None,
+        initial_R0: Optional[Union[int, float]] = None,
+        hospitalization_probability: Optional[
+            Union[float, np.ndarray]] = None,
+        hospitalization_duration: Optional[
+            Union[float, np.ndarray]] = None,
+        hospitalization_lag_from_onset: Optional[
+            Union[float, np.ndarray]] = None,
+        icu_probability: Optional[Union[float, np.ndarray]] = None,
+        icu_duration: Optional[Union[float, np.ndarray]] = None,
+        icu_lag_from_onset: Optional[Union[float, np.ndarray]] = None,
+        death_probability: Optional[Union[float, np.ndarray]] = None,
+        death_lag_from_onset: Optional[Union[float, np.ndarray]] = None,
+        population: Optional[Union[float, np.ndarray]] = None,
+        compartments: Optional[List[Any]] = None,
+        contacts_matrix: Optional[np.ndarray] = None,
+        restrictions_function: Optional[
+            Callable[[float], Union[float, np.ndarray]]] = None,
+        imported_cases_function: Optional[Callable] = None):
         """
         Initializes the SEIR models parameters and computes the infectivity
         rate from the contacts matrix, R0, and infective_duration. Supports
@@ -238,6 +240,7 @@ class SEIR:
             from the function's output.
         imported_cases_function: Optional[Callable] = None):
         """
+
     def _compute_infectivity_matrix(self,
                                     contacts_matrix: np.ndarray) -> np.ndarray:
         """
@@ -256,8 +259,8 @@ class SEIR:
         ------
         infectivity_matrix: np.ndarray
         """
-        normalization = 1 / self.infectious_period *\
-             self.initial_R0 * self.population.sum() / (self.population @ contacts_matrix).sum()
+        normalization = 1 / self.infectious_period * \
+                        self.initial_R0 * self.population.sum() / (self.population @ contacts_matrix).sum()
         return normalization * contacts_matrix
 
     def _fix_size(self, x: Union[np.ndarray, float, int]) -> np.ndarray:
@@ -307,7 +310,7 @@ class SEIR:
         dY/dt : np.ndarray with same shape as the input `Y`
         """
         if self.restrictions_function:
-            infectivity_matrix = np.multiply(restrictions_function(t),
+            infectivity_matrix = np.multiply(self.restrictions_function(t),
                                              self.infectivity_matrix)
         else:
             infectivity_matrix = self.infectivity_matrix
@@ -328,11 +331,11 @@ class SEIR:
         return np.concatenate([dS_dt, dE_dt, dI_dt, dR_dt])
 
     def set_initial_state(
-            self,
-            population_susceptible: Union[int, float, np.ndarray],
-            population_exposed: Union[int, float, np.ndarray],
-            population_infected: Union[int, float, np.ndarray],
-            probabilities: bool = False):
+        self,
+        population_susceptible: Union[int, float, np.ndarray],
+        population_exposed: Union[int, float, np.ndarray],
+        population_infected: Union[int, float, np.ndarray],
+        probabilities: bool = False):
         """
         Sets the initial state of the population system.
 
@@ -495,7 +498,7 @@ class SEIR:
             np.convolve(H_new_cases_a_day[:, i], Hwindow, mode='same')
             for i in range(self.num_compartments)
         ],
-                                  axis=-1)
+            axis=-1)
 
         # Compute the number of people in ICU for each day
         SEIR_icu_lag = self.SEIR_solution(time - self.icu_lag_from_onset)
@@ -507,7 +510,7 @@ class SEIR:
             np.convolve(ICU_new_cases_a_day[:, i], Hwindow, mode='same')
             for i in range(self.num_compartments)
         ],
-                                    axis=-1)
+            axis=-1)
 
         # Compute the total number of deaths
         SEIR_death_lag = self.SEIR_solution(time - self.death_lag_from_onset)
@@ -533,7 +536,7 @@ class SEIR:
             Icum_all, R, Rall, H_active_cases, H_all, ICU_active_cases,
             ICU_all, deaths, deaths_all
         ],
-                              axis=-1)
+            axis=-1)
         columns = [
             'susceptible', 'exposed', 'infected (active)', 'infected (total)',
             'removed', 'hospitalized (active)', 'in ICU', 'deaths'
@@ -545,4 +548,3 @@ class SEIR:
             ]))
 
         return pd.DataFrame(data, columns=all_columns)
-
