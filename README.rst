@@ -56,7 +56,7 @@ Here :code:`config` is a configuration file containing information on the epidem
 
 Config-files
 ~~~~~~~~~~~~
-The configuration file should contain three sections, :code:`[simulation]`, :code:`[model]`, and :code:`[population]`. Example files are provided in the :code:`example_configs/` directory at the root of the repository.
+The configuration file should contain three sections, :code:`[simulation]`, :code:`[model]`, and :code:`[initial state]`. Example files are provided in the :code:`example_configs/` directory at the root of the repository.
 
 
 :code:`[simulation]`
