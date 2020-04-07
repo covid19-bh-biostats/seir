@@ -11,8 +11,7 @@ This project adheres to `Semantic Versioning <https://semver.org/>`_.
 
 ***Fixed***
 * pep8 compatibility
-* bug when specifying compartment-specific initial populations not 
-  as probabilities
+* bug when specifying compartment-specific initial populations not as probabilities
 
 ***Dependencies***
 
