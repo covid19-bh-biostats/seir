@@ -1,4 +1,6 @@
+click
 numpy
 scipy>=1.4.0
 pandas
 matplotlib
+scipy

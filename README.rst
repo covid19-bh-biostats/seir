@@ -1,3 +1,26 @@
+====
+SEIR
+====
+
+
+.. image:: https://img.shields.io/pypi/v/SEIR.svg
+        :target: https://pypi.python.org/pypi/SEIR
+
+.. image:: https://readthedocs.org/projects/SEIR/badge/?version=latest
+        :target: https://SEIR.readthedocs.io/en/latest/?badge=latest
+        :alt: Documentation Status
+
+.. image:: https://flat.badgen.net/dependabot/thepracticaldev/dev.to?icon=dependabot
+    :alt: Dependabot Enabled
+
+
+SEIR modelling of covid19
+
+
+* Free software: MIT
+* Documentation: https://SEIR.readthedocs.io.
+
+
 Compartmentalized SEIR
 ======================
 
@@ -6,7 +29,7 @@ Python package for modeling epidemics using the SEIR model.
 Installation
 ------------
 
-The package is available in the `Python Package Index <https://pypi.org/projects/seir>`_, and can be installed 
+The package is available in the `Python Package Index <https://pypi.org/projects/seir>`_, and can be installed
 using *pip* ::
 
     pip install seir
@@ -72,7 +95,7 @@ Here the parameters are
           incubation_period
               Incubation period of the disease in days.
           infectious_period
-              How long a patient can infect others (in days) after 
+              How long a patient can infect others (in days) after
               the incubation period.
           initial_R0
               Basic reproductive number of the disease
@@ -81,7 +104,7 @@ Here the parameters are
           hospitalization_duration
               Average duration of a hospitalization in days.
           hospitalization_lag_from_onset
-              Average time (in days) from the onset of symptoms to admission 
+              Average time (in days) from the onset of symptoms to admission
               to hospital
           icu_probability
               Probability that an infected person needs hospitalization.
@@ -101,17 +124,17 @@ Here the parameters are
 
 The :code:`[model]` section defines the parameters of the disease model. When
 you wish to separate your population into various compartments (e.g., age groups),
-your :code:`[model]` section becomes more involved. 
+your :code:`[model]` section becomes more involved.
 
 As an example, consider the population of Finland, divided to three compartments by ages: 0...15, 16...65, and 65+ ::
 
     [model]
-    compartments = 
+    compartments =
         0-15,
         16-65,
         65+
 
-    population = 
+    population =
         871036,
         3422996,
         1231274
@@ -120,7 +143,7 @@ As an example, consider the population of Finland, divided to three compartments
     infectious_period = 7
     initial_R0 = 2.5
 
-    hospitalization_probability = 
+    hospitalization_probability =
         0.11,
         0.17,
         0.29
@@ -145,7 +168,7 @@ Here the parameters are
               a different incubation period for each compartment by supplying
               a comma-separated list.
           infectious_period
-              How long a patient can infect others (in days) after 
+              How long a patient can infect others (in days) after
               the incubation period. If a single number,
               the same number is used for all compartments. You can use
               a different value for each compartment by supplying
@@ -161,7 +184,7 @@ Here the parameters are
           hospitalization_duration
               Average duration of a hospitalization in days.
           hospitalization_lag_from_onset
-              Average time (in days) from the onset of symptoms to admission 
+              Average time (in days) from the onset of symptoms to admission
               to hospital.
           icu_probability
               Probability that an infected person needs hospitalization.
@@ -202,7 +225,7 @@ probabilities
     as probabilities, and the total number of exposed/infected
     people is computed by multiplying the total population by the provided value.
 
-population_exposed 
+population_exposed
     The total number (or probability) of exposed people
 
 population_infected
@@ -217,11 +240,11 @@ section of the configuration file should look something like ::
 
     [initial state]
     probabilities = True
-    population_exposed =         
+    population_exposed =
         0.001,
         0.01,
         0.005
-    population_infected = 
+    population_infected =
         0.001,
         0.01,
         0.005
@@ -233,7 +256,7 @@ probabilities
     as probabilities, and the total number of exposed/infected
     people is computed by multiplying the total population by the provided value.
 
-population_exposed 
+population_exposed
     The total number (or probability) of exposed people
 
 population_infected
@@ -242,8 +265,8 @@ population_infected
 Contact patterns (compartmentalized models)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sometimes we have the knowledge of how many different daily contacts a person 
-in compartment :code:`i` has with persons from compartment :code:`j`. This is 
+Sometimes we have the knowledge of how many different daily contacts a person
+in compartment :code:`i` has with persons from compartment :code:`j`. This is
 called the contacts matrix, :code:`C[i,j]`.
 
 The contacts matrix can be supplied to the :code:`seir-model` command line tool
@@ -258,7 +281,7 @@ in the configuration file. For an example, please try::
     $ seir-model -c contacts_matrices/finland --visualize-compartments example_configs/finland
 
 Example contact pattern matrix can be found in the :code:`contacts_matrices/` directory of the repository in Github.
- 
+
 Output file
 ~~~~~~~~~~~~
 
@@ -272,58 +295,58 @@ The outputfile is a comma separated table containing the following simulation re
     Number of susceptible people of compartment :code:`<compartment name>`
     corresponding to each day in the 'time' array.
 
-:code:`susceptible` 
+:code:`susceptible`
     Number of susceptible people in all compartments.
 
 :code:`('exposed', <compartment name>)`
-    Number of exposed people of compartment :code:`<compartment name>` 
+    Number of exposed people of compartment :code:`<compartment name>`
     corresponding to each day in the 'time' array.
 
-:code:`exposed` 
+:code:`exposed`
     Number of exposed people in all compartments.
 
 :code:`('infected (active)', <compartment name>)`
-    Number of people with an active infection of compartment :code:`<compartment name>` 
+    Number of people with an active infection of compartment :code:`<compartment name>`
     corresponding to each day in the 'time' array.
 
-:code:`infected (active)` 
+:code:`infected (active)`
     Number of people with an active infection in all compartments.
 
 :code:`('infected (total)', <compartment name>)`
     Number of people who have an active infection (or have had one in the history)
-    from compartment :code:`<compartment name>` 
+    from compartment :code:`<compartment name>`
     corresponding to each day in the 'time' array.
 
-:code:`infected (total)` 
-    Number of people who have an active infection (or have had one in the history) 
+:code:`infected (total)`
+    Number of people who have an active infection (or have had one in the history)
     in all compartments.
 
 :code:`('removed', <compartment name>)`
-    Number of removed of compartment :code:`<compartment name>` 
+    Number of removed of compartment :code:`<compartment name>`
     corresponding to each day in the 'time' array.
 
-:code:`removed` 
+:code:`removed`
     Number of removed people in all compartments.
 
 :code:`('hospitalized (active)', <compartment name>)`
-    Number of people who need hospitalization from 
-    compartment :code:`<compartment name>` 
+    Number of people who need hospitalization from
+    compartment :code:`<compartment name>`
     corresponding to each day in the 'time' array.
 
-:code:`hospitalized (active)` 
+:code:`hospitalized (active)`
     Total number of people who need hospitalization.
 
 :code:`('in ICU', <compartment name>)`
-    Number of people who (currently) need intensive care from 
-    compartment :code:`<compartment name>` 
+    Number of people who (currently) need intensive care from
+    compartment :code:`<compartment name>`
     corresponding to each day in the 'time' array.
 
-:code:`in ICU (active)` 
+:code:`in ICU (active)`
     Total number of people who currently need intensive care.
 
 :code:`('deaths', <compartment name>)`
-    Number of people from 
-    compartment :code:`<compartment name>` 
+    Number of people from
+    compartment :code:`<compartment name>`
     who have died (cumulative sum).
 
 :code:`deaths`

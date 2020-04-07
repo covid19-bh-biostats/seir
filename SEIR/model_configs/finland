@@ -1,0 +1,143 @@
+[simulation]
+# Simulation-specific details.
+# max_simulation_time specifies how many days from t=0 forward are modeled
+max_simulation_time = 300 
+method = DOP853
+max_step = 0.5
+
+[model]
+# Comma-separeted list of compartment names.
+# Can be specified on multiple lines
+compartments = 
+    0-4, 
+    5-9, 
+    10-14, 
+    15-19, 
+    20-24, 
+    25-29, 
+    30-34, 
+    35-39, 
+    40-44, 
+    45-49, 
+    50-54, 
+    55-59, 
+    60-64, 
+    65-69, 
+    70+
+
+# Population for each compartment
+population = 
+    255924, 
+    306287, 
+    308825, 
+    296671, 
+    313944, 
+    355685,
+    350782,
+    360782,
+    346475,
+    314373,
+    355794,
+    368871,
+    359619,
+    356960,
+    874314
+
+# Disease details. If some parameter is known to be different
+# for each compartment, you can specify it as a list
+incubation_period = 3
+infectious_period = 7
+initial_R0 = 2.5
+hospitalization_probability = 
+    0.11,
+    0.11,
+    0.11,
+    0.12,
+    0.12,
+    0.12,
+    0.12,
+    0.12,
+    0.12,
+    0.12,
+    0.17,
+    0.17,
+    0.17,
+    0.29,
+    0.29
+hospitalization_duration = 20
+hospitalization_lag_from_onset = 7
+icu_probability = 
+    0.02,
+    0.02,
+    0.02,
+    0.02,
+    0.02,
+    0.02,
+    0.02,
+    0.02,
+    0.02,
+    0.02,
+    0.02,
+    0.02,
+    0.02,
+    0.07,
+    0.21
+icu_duration = 10
+icu_lag_from_onset = 11
+death_probability = 
+    0,
+    0,
+    0,
+    0.0018,
+    0.0018,
+    0.0018,
+    0.002,
+    0.002,
+    0.002,
+    0.002,
+    0.006,
+    0.006,
+    0.011,
+    0.031,
+    0.038
+death_lag_from_onset = 25
+
+
+
+[initial state]
+# Status of the population at the beginning of the simulation
+# If the number of susceptible, exposed, and infected is known
+# for each compartment, specify as a list.
+probabilities = True
+population_exposed = 
+    0.001,
+    0.001,
+    0.003,
+    0.004,
+    0.007,
+    0.009,
+    0.010,
+    0.011,
+    0.010,
+    0.009,
+    0.007,
+    0.004,
+    0.003,
+    0.001,
+    0.001
+population_infected = 
+    0.000,
+    0.000,
+    0.001,
+    0.001,
+    0.002,
+    0.002,
+    0.003,
+    0.003,
+    0.003,
+    0.002,
+    0.002,
+    0.001,
+    0.001,
+    0.000,
+    0.000
