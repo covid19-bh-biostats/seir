@@ -1,6 +1,0 @@
-=======
-Modules
-=======
-
-.. automodapi:: SEIR
-
