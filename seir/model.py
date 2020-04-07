@@ -250,7 +250,7 @@ class SEIR:
         # Symmetrize the contact matrix here since if
         # compartment 'i' has contacts with compartment 'j',
         # it should also be vice versa
-        return normalization * 0.5*(contacts_matrix+contacts_matrix.T)
+        return normalization * 0.5 * (contacts_matrix + contacts_matrix.T)
 
     def _fix_size(self, x: Union[np.ndarray, float, int]) -> np.ndarray:
         """
@@ -319,25 +319,15 @@ class SEIR:
             dI_dt += DI
         return np.concatenate([dS_dt, dE_dt, dI_dt, dR_dt])
 
-    def set_initial_state(
-            self,
-            population_susceptible: Union[int, float, np.ndarray],
-            population_exposed: Union[int, float, np.ndarray],
-            population_infected: Union[int, float, np.ndarray],
-            probabilities: bool = False):
+    def set_initial_state(self,
+                          population_exposed: Union[int, float, np.ndarray],
+                          population_infected: Union[int, float, np.ndarray],
+                          probabilities: bool = False):
         """
         Sets the initial state of the population system.
 
         Input
         -----
-        population_susceptible: Union[int, float, np.ndarray]
-            If `probabilities` is True, this is the probability
-            (or probabilities for each compartment) that a person
-            is initially in the Susceptible state.
-
-            If `probabilities` is False, this is the
-            number (or numbers for each compartment) of
-            persons is initially in the Susceptible state.
         population_exposed:
             If `probabilities` is True, this is the probability
             (or probabilities for each compartment) that a person
@@ -360,16 +350,9 @@ class SEIR:
             the number of people.
         """
         if probabilities:
-            S = np.multiply(population_susceptible, self.population)
             E = np.multiply(population_exposed, self.population)
             I = np.multiply(population_infected, self.population)
         else:
-            if isinstance(population_susceptible, (int, float)):
-                S = self._fix_sizes(
-                    population_susceptible) / self.num_compartments
-            elif isinstance(population_susceptible, np.ndarray):
-                assert population_susceptible.size == self.num_compartments
-                S = population_susceptible
 
             if isinstance(population_exposed, (int, float)):
                 E = self._fix_sizes(population_exposed) / self.num_compartments
@@ -384,11 +367,14 @@ class SEIR:
                 assert population_infected.size == self.num_compartments
                 I = population_infected
 
+        S = self.population - E - I
+
         R = np.zeros(self.num_compartments)
 
         self.Y0 = np.concatenate([S, E, I, R])
 
-    def simulate(self, max_simulation_time: Union[int, float],
+    def simulate(self,
+                 max_simulation_time: Union[int, float],
                  max_step: float = 0.5,
                  method: Text = 'DOP853'):
         """
@@ -539,4 +525,3 @@ class SEIR:
             ]))
 
         return pd.DataFrame(data, columns=all_columns)
-

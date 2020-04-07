@@ -16,11 +16,15 @@ def parse_config_ini(config_file):
     for key, value in config.items("model"):
         if "," in value:
             if key == "compartments":
-                kwargs[key] = value.split(",")
+                kwargs[key] = [ v.strip() for v in value.split(",") ]
             else:
                 kwargs[key] = [float(x) for x in value.split(",")]
         else:
             kwargs[key] = float(value)
+
+    # Set default compartment if none given
+    if 'compartments' not in kwargs:
+        kwargs['compartments'] = ['All']
 
     # Parse initial state
     initial_state_kwargs = {}
