@@ -27,7 +27,7 @@ def parse_config_ini(config_file):
         else:
             try:
                 initial_state_kwargs[key] = float(value)
-            except Exception as e:
+            except Exception:
                 if value.lower() in ['yes', 'yau', 'true']:
                     initial_state_kwargs[key] = True
                 elif value.lower() in ['no', 'nay', 'false']:
@@ -43,7 +43,7 @@ def parse_config_ini(config_file):
         else:
             try:
                 simulation_kwargs[key] = float(value)
-            except Exception as e:
+            except Exception:
                 if value.lower() in ['yes', 'yau', 'true']:
                     simulation_kwargs[key] = True
                 elif value.lower() in ['no', 'nay', 'false']:
