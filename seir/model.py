@@ -1,5 +1,5 @@
 import itertools
-from typing import Any, Callable, List, Tuple, Optional, Union
+from typing import Any, Callable, List, Tuple, Optional, Union, Text
 
 import numpy as np
 from scipy.integrate import solve_ivp
@@ -117,7 +117,6 @@ class SEIR:
         self.icu_lag_from_onset = icu_lag_from_onset
         self.death_probability = self._fix_size(death_probability)
         self.death_lag_from_onset = death_lag_from_onset
-
         # Sanity checking on the population argument
         if isinstance(population, (int, float)):
             assert self.num_compartments == 1
@@ -129,7 +128,7 @@ class SEIR:
         self.population = self._fix_size(population)
 
         # Sanity checking on the contacts_matrix argument
-        if contacts_matrix and contacts_matrix.any():
+        if contacts_matrix is not None:
             assert contacts_matrix.shape[0] == len(self.compartments)
             assert contacts_matrix.shape[1] == len(self.compartments)
         else:
@@ -258,7 +257,10 @@ class SEIR:
         """
         normalization = 1 / self.infectious_period *\
              self.initial_R0 * self.population.sum() / (self.population @ contacts_matrix).sum()
-        return normalization * contacts_matrix
+        # Symmetrize the contact matrix here since if
+        # compartment 'i' has contacts with compartment 'j',
+        # it should also be vice versa
+        return normalization * 0.5*(contacts_matrix+contacts_matrix.T)
 
     def _fix_size(self, x: Union[np.ndarray, float, int]) -> np.ndarray:
         """
@@ -396,7 +398,9 @@ class SEIR:
 
         self.Y0 = np.concatenate([S, E, I, R])
 
-    def simulate(self, days_to_simulate: Union[int, float]):
+    def simulate(self, max_simulation_time: Union[int, float],
+                 max_step: float = 0.5,
+                 method: Text = 'DOP853'):
         """
         Simulates the SEIR model.
 
@@ -408,11 +412,11 @@ class SEIR:
         assert self.Y0 is not None
 
         solution = solve_ivp(fun=self,
-                             t_span=[0, days_to_simulate],
+                             t_span=[0, max_simulation_time],
                              y0=self.Y0,
                              dense_output=True,
-                             max_step=0.5,
-                             method='DOP853')
+                             max_step=max_step,
+                             method=method)
 
         # Create a callable returning the solution of the model
         def SEIR_solution(time: np.ndarray):
