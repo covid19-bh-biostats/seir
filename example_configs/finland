@@ -109,22 +109,6 @@ death_lag_from_onset = 25
 # If the number of susceptible, exposed, and infected is known
 # for each compartment, specify as a list.
 probabilities = True
-population_susceptible = 
-    0.008,
-    0.016,
-    0.030,
-    0.050,
-    0.073,
-    0.097,
-    0.115,
-    0.121,
-    0.115,
-    0.097,
-    0.073,
-    0.050,
-    0.030,
-    0.016,
-    0.008
 population_exposed = 
     0.001,
     0.001,
