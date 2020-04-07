@@ -1,4 +1,5 @@
 [model]
+max_simulation_time = 300
 population = 
     255924, 
     306287, 
@@ -18,19 +19,124 @@ population =
 incubation_period = 3
 infectious_period = 7
 initial_R0 = 2.5
-hospitalization_probability = 0.1
+hospitalization_probability = 
+    0.11,
+    0.11,
+    0.11,
+    0.12,
+    0.12,
+    0.12,
+    0.12,
+    0.12,
+    0.12,
+    0.12,
+    0.17,
+    0.17,
+    0.17,
+    0.29,
+    0.29
 hospitalization_duration = 20
 hospitalization_lag_from_onset = 7
-icu_probability = 0.01
+icu_probability = 
+    0.02,
+    0.02,
+    0.02,
+    0.02,
+    0.02,
+    0.02,
+    0.02,
+    0.02,
+    0.02,
+    0.02,
+    0.02,
+    0.02,
+    0.02,
+    0.07,
+    0.21
 icu_duration = 10
 icu_lag_from_onset = 11
-death_probability = 0.1
+death_probability = 
+    0,
+    0,
+    0,
+    0.0018,
+    0.0018,
+    0.0018,
+    0.002,
+    0.002,
+    0.002,
+    0.002,
+    0.006,
+    0.006,
+    0.011,
+    0.031,
+    0.038
 death_lag_from_onset = 25
-compartments = 0-4, 5-9, 10-14, 15-19, 20-24, 25-29, 30-34, 35-39, 40-44, 45-49, 50-54, 55-59, 60-64, 65-69, 70+
+compartments = 
+    0-4, 
+    5-9, 
+    10-14, 
+    15-19, 
+    20-24, 
+    25-29, 
+    30-34, 
+    35-39, 
+    40-44, 
+    45-49, 
+    50-54, 
+    55-59, 
+    60-64, 
+    65-69, 
+    70+
 
 
 [initial state]
-population_susceptible = 0.99
-population_exposed = 0.005
-population_infected = 0.005
 probabilities = True
+population_susceptible = 
+    0.008,
+    0.016,
+    0.030,
+    0.050,
+    0.073,
+    0.097,
+    0.115,
+    0.121,
+    0.115,
+    0.097,
+    0.073,
+    0.050,
+    0.030,
+    0.016,
+    0.008
+population_exposed = 
+    0.001,
+    0.001,
+    0.003,
+    0.004,
+    0.007,
+    0.009,
+    0.010,
+    0.011,
+    0.010,
+    0.009,
+    0.007,
+    0.004,
+    0.003,
+    0.001,
+    0.001
+population_infected = 
+    0.000,
+    0.000,
+    0.001,
+    0.001,
+    0.002,
+    0.002,
+    0.003,
+    0.003,
+    0.003,
+    0.002,
+    0.002,
+    0.001,
+    0.001,
+    0.000,
+    0.000

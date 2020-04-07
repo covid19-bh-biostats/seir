@@ -28,7 +28,8 @@ class SEIR:
                  contacts_matrix: Optional[np.ndarray] = None,
                  restrictions_function: Optional[
                      Callable[[float], Union[float, np.ndarray]]] = None,
-                 imported_cases_function: Optional[Callable] = None):
+                 imported_cases_function: Optional[Callable] = None,
+                 **kwargs):
         """
         Initializes the SEIR models parameters and computes the infectivity
         rate from the contacts matrix, R0, and infective_duration. Supports

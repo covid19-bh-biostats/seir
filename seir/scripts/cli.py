@@ -54,10 +54,10 @@ def _main_core(config_file, contacts_matrix_file, output_file,
     model.set_initial_state(**initial_state_kwargs)
 
     # Simulate up to 200 days
-    model.simulate(200)
+    model.simulate(kwargs['max_simulation_time'])
 
     # Evaluate the solution
-    time = np.arange(0, 200, 1, dtype=int)
+    time = np.arange(0, kwargs['max_simulation_time'], 1, dtype=int)
     results = model.evaluate_solution(time)
 
     # Save data
