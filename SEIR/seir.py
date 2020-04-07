@@ -18,13 +18,13 @@ class SEIR:
                  infectious_period: Union[int, float, np.ndarray],
                  initial_R0: Union[int, float],
                  hospitalization_probability: Union[float, np.ndarray],
-                 hospitalization_duration: Union[float, np.ndarray],
-                 hospitalization_lag_from_onset: Union[float, np.ndarray],
-                 icu_probability: Union[float, np.ndarray],
-                 icu_duration: Union[float, np.ndarray],
+                 hospitalization_duration: Union[float, int],
+                 hospitalization_lag_from_onset: Union[float, int],
+                 icu_probability: Union[float, int],
+                 icu_duration: Union[float, int],
                  icu_lag_from_onset: Union[float, np.ndarray],
                  death_probability: Union[float, np.ndarray],
-                 death_lag_from_onset: Union[float, np.ndarray],
+                 death_lag_from_onset: Union[float, int],
                  population: Union[float, np.ndarray],
                  compartments: Optional[List[Any]] = None,
                  contacts_matrix: Optional[np.ndarray] = None,
@@ -50,34 +50,24 @@ class SEIR:
             Probability that an infected person needs hospitalization.
             If an array, it should be the hospitalization probability
             for each population compartment.
-        hospitalization_duration: Union[float, np.ndarray]
-            Average duration of a hospitalization in days. If an array,
-            it should be the average hospitalization durations for each
-            population compartment.
-        hospitalization_lag_from_onset: Union[float, np.ndarray]
+        hospitalization_duration: Union[float, int]
+            Average duration of a hospitalization in days.
+        hospitalization_lag_from_onset: Union[float, int]
             Average time from the onset of symptoms to admission to hospital.
-            If an array, it should be the average time to hospitalization for
-            each population compartment.
         icu_probability: Union[float, np.ndarray]
             Probability that an infected person needs hospitalization.
             If an array, it should be the probability for each population
             compartment.
-        icu_duration: Union[float, np.ndarray]
+        icu_duration: Union[float, int]
             Average duration of the need for intensive care in days.
-            If an array, it should be the average durations for each population
-            compartment.
-        icu_lag_from_onset: Union[float, np.ndarray]
+        icu_lag_from_onset: Union[float, int]
             Average time from the onset of symptoms to admission to ICU.
-            If an array, it should be the average time to intensive care for
-            each population compartment.
         death_probability: Union[float, np.ndarray]
             Probability that an infected person dies from the disease.
             If an array, it should be the probability for each population
             compartment.
-        death_lag_from_onset: Union[float, np.ndarray]
+        death_lag_from_onset: Union[float, int]
             Average time from the onset of symptoms to death
-            If an array, it should be the average time to death for
-            each population compartment.
         population: Union[int, float, np.ndarray]
             The total population. If an array, it should be the number of
             people in each population compartment.
@@ -263,7 +253,7 @@ class SEIR:
         # Symmetrize the contact matrix here since if
         # compartment 'i' has contacts with compartment 'j',
         # it should also be vice versa
-        return normalization * 0.5*(contacts_matrix+contacts_matrix.T)
+        return normalization * 0.5 * (contacts_matrix + contacts_matrix.T)
 
     def _fix_size(self, x: Union[np.ndarray, float, int]) -> np.ndarray:
         """
@@ -332,25 +322,15 @@ class SEIR:
             dI_dt += DI
         return np.concatenate([dS_dt, dE_dt, dI_dt, dR_dt])
 
-    def set_initial_state(
-        self,
-        population_susceptible: Union[int, float, np.ndarray],
-        population_exposed: Union[int, float, np.ndarray],
-        population_infected: Union[int, float, np.ndarray],
-        probabilities: bool = False):
+    def set_initial_state(self,
+                          population_exposed: Union[int, float, np.ndarray],
+                          population_infected: Union[int, float, np.ndarray],
+                          probabilities: bool = False):
         """
         Sets the initial state of the population system.
 
         Input
         -----
-        population_susceptible: Union[int, float, np.ndarray]
-            If `probabilities` is True, this is the probability
-            (or probabilities for each compartment) that a person
-            is initially in the Susceptible state.
-
-            If `probabilities` is False, this is the
-            number (or numbers for each compartment) of
-            persons is initially in the Susceptible state.
         population_exposed:
             If `probabilities` is True, this is the probability
             (or probabilities for each compartment) that a person
@@ -373,16 +353,9 @@ class SEIR:
             the number of people.
         """
         if probabilities:
-            S = np.multiply(population_susceptible, self.population)
             E = np.multiply(population_exposed, self.population)
             I = np.multiply(population_infected, self.population)
         else:
-            if isinstance(population_susceptible, (int, float)):
-                S = self._fix_sizes(
-                    population_susceptible) / self.num_compartments
-            elif isinstance(population_susceptible, np.ndarray):
-                assert population_susceptible.size == self.num_compartments
-                S = population_susceptible
 
             if isinstance(population_exposed, (int, float)):
                 E = self._fix_sizes(population_exposed) / self.num_compartments
@@ -397,11 +370,14 @@ class SEIR:
                 assert population_infected.size == self.num_compartments
                 I = population_infected
 
+        S = self.population - E - I
+
         R = np.zeros(self.num_compartments)
 
         self.Y0 = np.concatenate([S, E, I, R])
 
-    def simulate(self, max_simulation_time: Union[int, float],
+    def simulate(self,
+                 max_simulation_time: Union[int, float],
                  max_step: float = 0.5,
                  method: Text = 'DOP853'):
         """
