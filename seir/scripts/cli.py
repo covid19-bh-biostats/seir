@@ -24,7 +24,8 @@ def parse_config_ini(config_file):
     return kwargs
 
 
-def _main_core(config_file, contacts_matrix_file, output_file, visualize_compartments):
+def _main_core(config_file, contacts_matrix_file, output_file,
+               visualize_compartments):
     # TODO: Handle somehow the creation of a restrictions function
     # TODO: Handle somehow the creation of an imports function
     # Setup the model
@@ -54,7 +55,9 @@ def _main_core(config_file, contacts_matrix_file, output_file, visualize_compart
     results.to_csv(output_file)
 
     # Visualize the results
-    visualize_seir_computation(results, show_individual_compartments=visualize_compartments)
+    visualize_seir_computation(
+        results, show_individual_compartments=visualize_compartments)
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -75,7 +78,9 @@ def main():
                         type=str,
                         help='Output file name')
     args = parser.parse_args()
-    _main_core(args.config_file, args.contacts_matrix_file, args.output_file, args.visualize_compartments)
+    _main_core(args.config_file, args.contacts_matrix_file, args.output_file,
+               args.visualize_compartments)
+
 
 if __name__ == '__main__':
     main()
