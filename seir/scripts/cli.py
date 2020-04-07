@@ -36,7 +36,7 @@ def parse_config_ini(config_file):
                 elif value.lower() in ['no', 'nay', 'false']:
                     initial_state_kwargs[key] = False
                 else:
-                    initial_state_kwargs[key] = value
+                    raise ValueError(f"Non-float value for {key}: {value}")
 
     # Parse simulation arguments
     simulation_kwargs = {}
