@@ -1,5 +1,5 @@
 import itertools
-from typing import Any, Callable, List, Tuple, Optional, Union
+from typing import Any, Callable, List, Tuple, Optional, Union, Text
 
 import numpy as np
 from scipy.integrate import solve_ivp
@@ -28,8 +28,7 @@ class SEIR:
                  contacts_matrix: Optional[np.ndarray] = None,
                  restrictions_function: Optional[
                      Callable[[float], Union[float, np.ndarray]]] = None,
-                 imported_cases_function: Optional[Callable] = None,
-                 **kwargs):
+                 imported_cases_function: Optional[Callable] = None):
         """
         Initializes the SEIR models parameters and computes the infectivity
         rate from the contacts matrix, R0, and infective_duration. Supports
@@ -396,7 +395,9 @@ class SEIR:
 
         self.Y0 = np.concatenate([S, E, I, R])
 
-    def simulate(self, days_to_simulate: Union[int, float]):
+    def simulate(self, max_simulation_time: Union[int, float],
+                 max_step: float = 0.5,
+                 method: Text = 'DOP853'):
         """
         Simulates the SEIR model.
 
@@ -408,11 +409,11 @@ class SEIR:
         assert self.Y0 is not None
 
         solution = solve_ivp(fun=self,
-                             t_span=[0, days_to_simulate],
+                             t_span=[0, max_simulation_time],
                              y0=self.Y0,
                              dense_output=True,
-                             max_step=0.5,
-                             method='DOP853')
+                             max_step=max_step,
+                             method=method)
 
         # Create a callable returning the solution of the model
         def SEIR_solution(time: np.ndarray):

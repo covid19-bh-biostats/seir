@@ -59,8 +59,7 @@ def visualize_seir_computation(results: pd.DataFrame,
         lines = _plot_compartment_subplot(ax, 'deaths', results)
 
         ax.yaxis.set_major_formatter(EngFormatter())
-        gsp = GridSpecFromSubplotSpec(5, 1, gs[1])
-        ax = fig.add_subplot(gsp[2])
+        ax = fig.add_subplot(gs[1])
         ax.legend(lines, compartments)
         ax.set_xticks(())
         ax.set_yticks(())

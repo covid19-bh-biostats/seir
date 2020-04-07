@@ -15,13 +15,14 @@ def parse_config_ini(config_file):
     kwargs = {}
     for key, value in config.items("model"):
         if "," in value:
-            value = value.replace('\n', '').replace('\t', '')
             if key == "compartments":
                 kwargs[key] = value.split(",")
             else:
                 kwargs[key] = [float(x) for x in value.split(",")]
         else:
             kwargs[key] = float(value)
+
+    # Parse initial state
     initial_state_kwargs = {}
     for key, value in config.items("initial state"):
         if "," in value:
@@ -30,11 +31,29 @@ def parse_config_ini(config_file):
             try:
                 initial_state_kwargs[key] = float(value)
             except Exception as e:
-                try:
-                    initial_state_kwargs[key] = bool(value)
-                except Exception as e:
-                    raise e
-    return kwargs, initial_state_kwargs
+                if value.lower() in ['yes', 'yau', 'true']:
+                    initial_state_kwargs[key] = True
+                elif value.lower() in ['no', 'nay', 'false']:
+                    initial_state_kwargs[key] = False
+                else:
+                    initial_state_kwargs[key] = value
+
+    # Parse simulation arguments
+    simulation_kwargs = {}
+    for key, value in config.items("simulation"):
+        if "," in value:
+            simulation_kwargs[key] = [float(x) for x in value.split(",")]
+        else:
+            try:
+                simulation_kwargs[key] = float(value)
+            except Exception as e:
+                if value.lower() in ['yes', 'yau', 'true']:
+                    simulation_kwargs[key] = True
+                elif value.lower() in ['no', 'nay', 'false']:
+                    simulation_kwargs[key] = False
+                else:
+                    simulation_kwargs[key] = value
+    return kwargs, initial_state_kwargs, simulation_kwargs
 
 
 def _main_core(config_file, contacts_matrix_file, output_file,
@@ -42,7 +61,7 @@ def _main_core(config_file, contacts_matrix_file, output_file,
     # TODO: Handle somehow the creation of a restrictions function
     # TODO: Handle somehow the creation of an imports function
     # Setup the model
-    kwargs, initial_state_kwargs = parse_config_ini(config_file)
+    kwargs, initial_state_kwargs, sim_kwargs = parse_config_ini(config_file)
 
     if contacts_matrix_file:
         with open(contacts_matrix_file) as contacts_matrix_file:
@@ -54,10 +73,10 @@ def _main_core(config_file, contacts_matrix_file, output_file,
     model.set_initial_state(**initial_state_kwargs)
 
     # Simulate up to 200 days
-    model.simulate(kwargs['max_simulation_time'])
+    model.simulate(**sim_kwargs)
 
     # Evaluate the solution
-    time = np.arange(0, kwargs['max_simulation_time'], 1, dtype=int)
+    time = np.arange(0, sim_kwargs['max_simulation_time'], 1, dtype=int)
     results = model.evaluate_solution(time)
 
     # Save data

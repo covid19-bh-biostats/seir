@@ -1,5 +1,9 @@
-[model]
+[simulation]
 max_simulation_time = 300
+method = DOP853
+max_step = 0.5
+
+[model]
 population = 
     255924, 
     306287, 
