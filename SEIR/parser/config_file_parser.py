@@ -2,7 +2,7 @@ import configparser
 import itertools
 import re
 import pathlib
-from typing import Callable, Dict, List, Text, Tuple, Union
+from typing import Callable, Dict, List, Optional, Text, Tuple, Union
 
 import numpy as np
 
@@ -56,10 +56,8 @@ def _parse_compartments(compartments_str: Text,
         # exist
         unknown_compartments = set(compartments).difference(all_compartments)
         if len(unknown_compartments) != 0:
-            raise ValueError(
-                (f"[{section_name}]: Unknown compartments in the "
-                 f"infectivity modifier: {unknown_compartments}")
-            )
+            raise ValueError((f"[{section_name}]: Unknown compartments in the "
+                              f"infectivity modifier: {unknown_compartments}"))
         return compartments
 
 
@@ -110,7 +108,33 @@ def _parse_infectivity_modifier_matrix_definition_single_line(
         line: Text,
         all_compartments: List[Text]) -> Tuple[List[int], List[int], float]:
     """
+    Parses a single line defining modifications to the infectivity matrix.
 
+    Input
+    -----
+    line: Text
+        Line defining the modifications to the infectivity matrix. Should be
+        a colon-separated list (without brackets) where two first elements
+        define the compartments this modification relates to and the least
+        element should be a float defining the prefactor for the element
+        of the infectivity matrix
+    all_compartments: List[Text]
+        List of all defined compartments
+
+    Returns
+    -------
+    i: List[int]
+        Column indices for the modifier matrix.
+    j: List[int]
+        Row indices for the modifier matrix.
+    modifier: float
+        The value with which to multiple the corresponding
+        elements of the modifier matrix
+
+    Raises
+    ------
+    ValueError
+        Raised if the modifier line is invalid
     """
     # Check that we have three parts, separated by ':'
     parts = [part.strip() for part in line.split(':')]
@@ -241,13 +265,50 @@ def _parse_restriction_section(
     return restrictions_function, info
 
 
-def _parse_restriction_sections(config: configparser.ConfigParser,
-                                compartments):
+def _parse_restriction_sections(
+        config: configparser.ConfigParser, compartments: List[Text]
+) -> Tuple[Optional[Callable[[float], Union[float, np.ndarray]]], Optional[
+        List[Dict[Text, Union[Text, int]]]]]:
+    """
+    Parses all "[restriction NAME]" sections from the configparser to
+    a function and list of infos on the restrictions.
+
+    Input
+    -----
+    config: configparser.ConfigParser
+        The parser
+    compartments: List[Text]
+        List of all compartments
+
+    Returns
+    -------
+    restrictions_function(float) -> float/np.ndarray
+        A function of time returning the element-wise prefactors
+        for the infectivity rate matrix
+    restriction_infos: List
+        List of infos on the restrictions. The infos are dictionaries
+        with the following keys
+
+        begins
+            The day the restriction starts
+        ends
+            The day the restriction ends
+        title
+            Name of the restriction (from the config file section title)
+
+    Raises
+    ------
+    ValueError
+        If there is an error in the restrictions definition
+    """
+
+    # Get the section names for restriction definitions
     restriction_sections = [
         sec for sec in config.sections()
         if sec.lower().startswith('restriction')
     ]
 
+    # Parse all restriction definitions
     restr_funs = []
     restr_info = []
     for rsec in restriction_sections:
@@ -256,10 +317,11 @@ def _parse_restriction_sections(config: configparser.ConfigParser,
         restr_funs.append(fun)
         restr_info.append(info)
 
+    # Return the restriction function and infos on the restrictions
     if len(restr_funs) == 0:
         return None, None
     elif len(restr_funs) == 1:
-        return restr_funs[0], info
+        return restr_funs[0], restr_info[0]
     else:
 
         def restrictions(t):
@@ -268,7 +330,7 @@ def _parse_restriction_sections(config: configparser.ConfigParser,
                 modif = np.multiply(modif, fun(t))
             return modif
 
-        return restrictions, info
+        return restrictions, restr_info
 
 
 def parse_config_ini(config_file):
