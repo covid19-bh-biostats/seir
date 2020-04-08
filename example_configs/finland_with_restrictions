@@ -45,8 +45,8 @@ population =
 
 # Disease details. If some parameter is known to be different
 # for each compartment, you can specify it as a list
-incubation_period = 3
-infectious_period = 7
+incubation_period = 3.5
+infectious_period = 5
 initial_R0 = 2.5
 hospitalization_probability = 
     0.11,
@@ -108,23 +108,23 @@ death_lag_from_onset = 25
 # Status of the population at the beginning of the simulation
 # If the number of susceptible, exposed, and infected is known
 # for each compartment, specify as a list.
-probabilities = True
-population_exposed = 
-    0.001,
-    0.001,
-    0.003,
-    0.004,
-    0.007,
-    0.009,
-    0.010,
-    0.011,
-    0.010,
-    0.009,
-    0.007,
-    0.004,
-    0.003,
-    0.001,
-    0.001
+probabilities = False
+population_exposed =
+    0.084, 
+    0.084, 
+    0.252, 
+    0.336, 
+    0.588, 
+    0.756, 
+    0.84, 
+    0.924, 
+    0.84 ,
+    0.756, 
+    0.588, 
+    0.336,
+    0.252, 
+    0.084, 
+    0.084
 population_infected = 
     0.000,
     0.000,
@@ -148,13 +148,13 @@ day-ends = 180
 infectivity modifier = 0.7
 
 [restriction school-closure]
-day-begins = 1
+day-begins = 20
 day-ends = 180
 infectivity modifier = 
-   [0-4, 5-9, 10-14, 15-19] : [0-4, 5-9, 10-14, 15-19] : 0.4
-   all : [65-69, 70+] : 0
+   [5-9, 10-14, 15-19] : [5-9, 10-14, 15-19] : 0.5714
+   all : [65-69, 70+] : 0.7143
 
-[restriction random-efforts]
-day-begins = 1
-day-ends = 180
-infectivity modifier = file://infectivity_modifier_matrix_example.csv
+#[restriction random-efforts]
+#day-begins = 1
+#day-ends = 180
+#infectivity modifier = file://infectivity_modifier_matrix_example.csv
