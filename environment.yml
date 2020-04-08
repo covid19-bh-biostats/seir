@@ -2,8 +2,12 @@ name: conda-environment-forbinder
 channels:
   - conda-forge
 dependencies:
+  - python>3.6
+  - notebook
+  - jupyter_dashboards
   - numpy
   - click
   - scipy
   - pandas
   - matplotlib
+  - ipywidgets
