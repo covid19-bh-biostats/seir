@@ -47,7 +47,7 @@ def _parse_compartments(compartments_str: Text,
         m = re.match(r'\[(?P<compartments>(.+))\]', compartments_str)
         if not m:
             raise ValueError(
-                f"[{section_name}]: Compartment list not enclosed in brackets")
+                f"Compartment list not enclosed in brackets")
 
         # Different compartments are comma separated, strip any whitespace
         compartments = [c.strip() for c in m.group('compartments').split(',')]
@@ -56,7 +56,7 @@ def _parse_compartments(compartments_str: Text,
         # exist
         unknown_compartments = set(compartments).difference(all_compartments)
         if len(unknown_compartments) != 0:
-            raise ValueError((f"[{section_name}]: Unknown compartments in the "
+            raise ValueError((f"Unknown compartments in the "
                               f"infectivity modifier: {unknown_compartments}"))
         return compartments
 
@@ -91,14 +91,14 @@ def _get_infectivity_modifier_from_file(path: Text, num_all_compartments: int
         # Check that the shape is correct
         if modifier_matrix.shape !=\
            (num_all_compartments, num_all_compartments):
-            raise ValueError((f"[{section_name}]: Infectivity modifier "
-                              f"matrix in {file} has shape: "
+            raise ValueError((f"Infectivity rate modifier "
+                              f"matrix in {path} has shape: "
                               f"{modifier_matrix.shape}, expected "
-                              f"({len(all_compartments)}, "
-                              f"{len(all_compartments)})"))
+                              f"({num_all_compartments}, "
+                              f"{num_all_compartments})"))
 
     else:
-        raise ValueError((f"[{section_name}]: Infectivity modifier file "
+        raise ValueError((f"Infectivity modifier file "
                           f"{path} does not exist."))
 
     return modifier_matrix
@@ -139,7 +139,7 @@ def _parse_infectivity_modifier_matrix_definition_single_line(
     # Check that we have three parts, separated by ':'
     parts = [part.strip() for part in line.split(':')]
     if len(parts) != 3:
-        raise ValueError(f"{section_name}: Malformed infectivity modifier")
+        raise ValueError(f"Malformed infectivity modifier: {line}")
 
     # Parse the compartments in this modifier
     compartments_1 = _parse_compartments(parts[0], all_compartments)
@@ -160,7 +160,7 @@ def _parse_infectivity_modifier_matrix_definition_single_line(
     try:
         modifier = float(parts[2])
     except Exception:
-        raise ValueError((f"{section_name}: Malformed infectivity modifier "
+        raise ValueError((f"Malformed infectivity modifier "
                           "{parts[2]}, expected a float"))
     return infectivity_matrix_indexes_to_modify[:, 0],\
         infectivity_matrix_indexes_to_modify[:, 1], modifier
@@ -239,7 +239,7 @@ def _parse_restriction_section(
     # Setup the info dictionary
     day_begins = int(section['day-begins'])
     day_ends = int(section['day-ends'])
-    info = {
+    info: Dict[Text, Union[int, Text]] = {
         'begins': day_begins,
         'ends': day_ends,
         'title': " ".join(section_name.split(' ')[1:])
@@ -247,7 +247,7 @@ def _parse_restriction_section(
 
     # Parse the infectivity modifier
     inf_modifier_str = section['infectivity modifier']
-    inf_modifier = None
+    inf_modifier: Union[float, np.ndarray] = None
     try:
         # Try to interpret the infectivity modifier as a single float
         inf_modifier = float(inf_modifier_str)
@@ -321,7 +321,7 @@ def parse_restriction_sections(
 
     # Parse all restriction definitions
     restr_funs = []
-    restr_info = []
+    restr_info: List[Dict[Text, Union[int, Text]]] = []
     for rsec in restriction_sections:
         fun, info = _parse_restriction_section(dict(config.items(rsec)), rsec,
                                                compartments)
@@ -332,7 +332,7 @@ def parse_restriction_sections(
     if len(restr_funs) == 0:
         return None, None
     elif len(restr_funs) == 1:
-        return restr_funs[0], restr_info[0]
+        return restr_funs[0], [restr_info[0]]
     else:
 
         def restrictions(t):
