@@ -10,7 +10,7 @@ SEIR
 
 .. image:: https://img.shields.io/pypi/v/SEIR.svg
         :target: https://pypi.python.org/pypi/SEIR
-        
+
 .. image:: https://readthedocs.org/projects/seir/badge/?version=latest
         :target: https://seir.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
@@ -19,8 +19,7 @@ SEIR
     :alt: Dependabot Enabled
 
 
-SEIR modelling of covid19
-
+**SEIR modelling of covid19**
 
 * Free software: MIT
 * Documentation: https://SEIR.readthedocs.io.
@@ -47,15 +46,27 @@ at `Github <https://github.com/covid19-bh-biostats/seir>`_, and can be installed
 Command line simulation tool
 ----------------------------
 
-The :code:`seir` package includes a command line tool :code:`SEIR` for a simulation of
+Quickstart
+~~~~~~~~~~
+
+Run the following command for an overview of all commands ::
+
+    SEIR --help
+
+Run the following command from the root of this repository for a full demonstration of SEIR's features ::
+
+    SEIR -cf example_configs/finland_with_restrictions -cm contacts_matrices/finland --visualize-compartments
+
+Config-files
+~~~~~~~~~~~~
+
+The :code:`SEIR` package includes a command line interface for the simulation of
 a simple compartmentalized SEIR model. Basic use looks like the following ::
 
     $ SEIR --config_file config
 
 Here :code:`config` is a configuration file containing information on the epidemic and the population. Examples of configuration files can be found in the `example_configs/ <https://github.com/covid19-bh-biostats/seir/tree/master/example_configs>`_ directory of the Github repository.
 
-Config-files
-~~~~~~~~~~~~
 The configuration file should contain three sections, :code:`[simulation]`, :code:`[model]`, and :code:`[initial state]`. Example files are provided in the :code:`example_configs/` directory at the root of the repository.
 
 
@@ -271,14 +282,14 @@ population_infected
 ^^^^^^^^^^^^^^^^^^^^^^
 
 We can model restrictions such as social distancing and closing of schools
-by introducing time-dependence in the infectivity rate (matrix, if 
+by introducing time-dependence in the infectivity rate (matrix, if
 compartmentalized model).
 
 Restrictions can be defined in the *config* file within sections named
 :code:`[restriction TITLE]`. You can define multiple restrictions in the
 same file.
 
-The restrictions :math:`R_{\alpha}(t)` are implemented as prefactors of 
+The restrictions :math:`R_{\alpha}(t)` are implemented as prefactors of
 the infectivity rate :math:`\mathcal{I}` as
 
 .. math:
@@ -318,7 +329,7 @@ For example, to decrease the contacts between the compartments :code:`0-4`,
     [restriction social-distancing experiment 2]
     day-begins = 20
     day-ends = 180
-    infectivity modifier = 
+    infectivity modifier =
         [ 0-4, 5-9, 15-19 ] : [ 35-39, 40-44 ] : 0.8
         all : [ 60-64, 65+ ] : 0.2
 
@@ -333,7 +344,7 @@ and the file where the prefactor matrix :math:`R` is stored in CSV format,
     [restriction social-distancing experiment 2]
     day-begins = 20
     day-ends = 180
-    infectivity modifier = file://my_data/restrictions_prefactor.csv 
+    infectivity modifier = file://my_data/restrictions_prefactor.csv
 
 
 
@@ -347,13 +358,13 @@ called the contacts matrix, :code:`C[i,j]`.
 The contacts matrix can be supplied to the :code:`SEIR` command line tool
 with the flag :code:`-c` ::
 
-    $ SEIR -c my_contacts_matrix.csv configfile
+    $ SEIR -cm my_contacts_matrix.csv configfile
 
 The contacts matrix should be a space or comma separated file
 with the same number of columns and rows as there are compartments defined
 in the configuration file. For an example, please try::
 
-    $ SEIR -c contacts_matrices/finland --visualize-compartments example_configs/finland
+    $ SEIR -cm contacts_matrices/finland -cf example_configs/finland --visualize-compartments
 
 Example contact pattern matrix can be found in the :code:`contacts_matrices/` directory of the repository in Github.
 

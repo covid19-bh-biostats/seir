@@ -12,14 +12,16 @@ WD = os.path.dirname(__file__)
 
 
 @click.command()
-@click.option('--config_file',
+@click.option('--config_file', '-cf',
               type=click.Path(exists=True),
               help='Path to config ini file.')
-@click.option('--contacts_matrix_file',
+@click.option('--contacts_matrix_file', '-cm',
               type=click.Path(exists=True),
               help='Path to contact matrix file')
-@click.option('--visualize-compartments', type=bool, default=True)
-@click.option('--output_file',
+@click.option('--visualize-compartments',
+              type=bool,
+              is_flag=True)
+@click.option('--output_file', '-o',
               type=str,
               help='Path to output file.')
 def main(config_file, contacts_matrix_file, visualize_compartments,
@@ -28,11 +30,8 @@ def main(config_file, contacts_matrix_file, visualize_compartments,
     # TODO: Handle somehow the creation of an imports function
     # Setup the model
     if not config_file:
-        kwargs, initial_state_kwargs, sim_kwargs, restr_info = parse_config_ini(
-            f'{WD}/model_configs/finland')
-    else:
-        kwargs, initial_state_kwargs, sim_kwargs, restr_info = parse_config_ini(
-            config_file)
+        config_file = f'{WD}/model_configs/finland'
+    kwargs, initial_state_kwargs, sim_kwargs, restr_info = parse_config_ini(config_file)
 
     if contacts_matrix_file:
         with open(contacts_matrix_file) as contacts_matrix_file:
