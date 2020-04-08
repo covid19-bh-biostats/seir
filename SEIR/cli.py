@@ -25,7 +25,6 @@ WD = os.path.dirname(__file__)
 def main(config_file, contacts_matrix_file, visualize_compartments,
          output_file):
     """Console script for SEIR."""
-    # TODO: Handle somehow the creation of a restrictions function
     # TODO: Handle somehow the creation of an imports function
     # Setup the model
     if not config_file:
@@ -59,6 +58,7 @@ def main(config_file, contacts_matrix_file, visualize_compartments,
     visualize_seir_computation(
         results,
         compartments=kwargs['compartments'],
+        restrictions_info = restr_info,
         show_individual_compartments=visualize_compartments)
 
 

@@ -148,8 +148,8 @@ day-ends = 180
 infectivity modifier = 0.7
 
 [restriction school-closure]
-day-begins = 20
-day-ends = 180
+day-begins = 40
+day-ends = 100
 infectivity modifier = 
    [5-9, 10-14, 15-19] : [5-9, 10-14, 15-19] : 0.5714
    all : [65-69, 70+] : 0.7143
