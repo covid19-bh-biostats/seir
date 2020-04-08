@@ -2,7 +2,7 @@ name: conda-environment-forbinder
 channels:
   - conda-forge
 dependencies:
-  - python>3.6
+  - python=3.6
   - notebook=6.0.1
   - numpy=1.17.1
   - click=7.0
