@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Text
+from typing import Dict, List, Optional, Text
 
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
@@ -120,7 +120,6 @@ def visualize_seir_computation(results: pd.DataFrame,
     ax.legend()
     ax.set_xlabel('time (days)')
     ax.set_ylabel('# of people')
-
 
     ax.yaxis.set_major_formatter(EngFormatter())
     fig.tight_layout()

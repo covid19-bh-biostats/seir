@@ -58,7 +58,7 @@ def main(config_file, contacts_matrix_file, visualize_compartments,
     visualize_seir_computation(
         results,
         compartments=kwargs['compartments'],
-        restrictions_info = restr_info,
+        restrictions_info=restr_info,
         show_individual_compartments=visualize_compartments)
 
 
