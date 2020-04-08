@@ -5,7 +5,7 @@ email: lukas.heumos@posteo.net
 project_name: SEIR
 project_slug: SEIR
 project_short_description: SEIR modelling of covid19
-version: 0.1.0
+version: 0.2.0
 license: MIT
 command_line_interface: Click
 use_pytest: y
