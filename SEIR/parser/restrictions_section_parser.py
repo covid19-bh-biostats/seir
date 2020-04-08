@@ -342,4 +342,3 @@ def parse_restriction_sections(
             return modif
 
         return restrictions, restr_info
-
