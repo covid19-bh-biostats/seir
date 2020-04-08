@@ -30,10 +30,10 @@ def main(config_file, contacts_matrix_file, visualize_compartments,
     # TODO: Handle somehow the creation of an imports function
     # Setup the model
     if not config_file:
-        kwargs, initial_state_kwargs, sim_kwargs = parse_config_ini(
+        kwargs, initial_state_kwargs, sim_kwargs, restr_info = parse_config_ini(
             f'{WD}/model_configs/finland')
     else:
-        kwargs, initial_state_kwargs, sim_kwargs = parse_config_ini(
+        kwargs, initial_state_kwargs, sim_kwargs, restr_info = parse_config_ini(
             config_file)
 
     if contacts_matrix_file:
