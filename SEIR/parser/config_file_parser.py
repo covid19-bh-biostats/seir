@@ -2,6 +2,7 @@ import configparser
 
 from SEIR.parser.restrictions_section_parser import parse_restriction_sections
 
+
 def parse_config_ini(config_file):
     config = configparser.ConfigParser()
     config.optionxform = str  # Avoids lower-casing of keys
