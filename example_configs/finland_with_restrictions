@@ -153,3 +153,8 @@ day-ends = 180
 infectivity modifier = 
    [0-4, 5-9, 10-14, 15-19] : [0-4, 5-9, 10-14, 15-19] : 0.4
    all : [65-69, 70+] : 0
+
+[restriction random-efforts]
+day-begins = 1
+day-ends = 180
+infectivity modifier = file://infectivity_modifier_matrix_example.csv

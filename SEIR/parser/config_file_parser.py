@@ -1,6 +1,7 @@
 import configparser
 import itertools
 import re
+import pathlib
 
 import numpy as np
 
@@ -33,6 +34,7 @@ def _parse_compartments(compartments_str, all_compartments):
 
 
 def _parse_restriction_section(section, section_name, all_compartments):
+    num_all_compartments = len(all_compartments)
     day_begins = int(section['day-begins'])
     day_ends = int(section['day-ends'])
     info = {
@@ -41,20 +43,46 @@ def _parse_restriction_section(section, section_name, all_compartments):
         'title': " ".join(section_name.split(' ')[1:])
     }
     inf_modifier_str = section['infectivity modifier']
+    inf_modifier = None
     try:
         # Try to interpret the infectivity modifier as a single float
         inf_modifier = float(inf_modifier_str)
-
+    except Exception:
+        ...
+    if inf_modifier: # Is float
         def restrictions_function(t):
             if day_begins <= t <= day_ends:
                 return inf_modifier
             else:
                 return 1.0
-    except Exception:
-        try:
-            # Try to interpret the infectivity modifier as a filepath
-            raise Exception()
-        except Exception:
+    else:
+        # Try to interpret the infectivity modifier as a filepath
+        if inf_modifier_str.strip().startswith('file://'):
+            path = inf_modifier_str.strip().replace('file://', '')
+            if pathlib.Path(path).is_file():
+                modifier_matrix = np.loadtxt(path)
+                if modifier_matrix.shape !=\
+                   (num_all_compartments, num_all_compartments):
+                    raise ValueError(
+                        (
+                            f"[{section_name}]: Infectivity modifier "
+                            f"matrix in {file} has shape: "
+                            f"{modifier_matrix.shape}, expected "
+                            f"({len(all_compartments)}, "
+                            f"{len(all_compartments)})"
+                        )
+                    )
+
+                def restrictions_function(t):
+                    if day_begins <= t <= day_ends:
+                        return modifier_matrix
+                    else:
+                        return 1.0
+            else:
+                raise ValueError(
+                    f"[{section_name}]: Infectivity modifier file {path} does not exist."
+                )
+        else:
             # Try to interpret the infectivity modifier as a list of modifications
             # to the matrix
             modifier_str_list = inf_modifier_str.strip().split('\n')
