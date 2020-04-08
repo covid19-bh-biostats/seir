@@ -1,0 +1,9 @@
+name: conda-environment-forbinder
+channels:
+  - conda-forge
+dependencies:
+  - numpy
+  - click
+  - scipy
+  - pandas
+  - matplotlib
