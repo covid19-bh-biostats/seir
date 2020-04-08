@@ -47,10 +47,10 @@ at `Github <https://github.com/covid19-bh-biostats/seir>`_, and can be installed
 Command line simulation tool
 ----------------------------
 
-The :code:`seir` package includes a command line tool :code:`seir-model` for a simulation of
+The :code:`seir` package includes a command line tool :code:`SEIR` for a simulation of
 a simple compartmentalized SEIR model. Basic use looks like the following ::
 
-    $ seir-model config
+    $ SEIR --config_file config
 
 Here :code:`config` is a configuration file containing information on the epidemic and the population. Examples of configuration files can be found in the `example_configs/ <https://github.com/covid19-bh-biostats/seir/tree/master/example_configs>`_ directory of the Github repository.
 
@@ -274,23 +274,23 @@ Sometimes we have the knowledge of how many different daily contacts a person
 in compartment :code:`i` has with persons from compartment :code:`j`. This is
 called the contacts matrix, :code:`C[i,j]`.
 
-The contacts matrix can be supplied to the :code:`seir-model` command line tool
+The contacts matrix can be supplied to the :code:`SEIR` command line tool
 with the flag :code:`-c` ::
 
-    $ seir-model -c my_contacts_matrix.csv configfile
+    $ SEIR -c my_contacts_matrix.csv configfile
 
 The contacts matrix should be a space or comma separated file
 with the same number of columns and rows as there are compartments defined
 in the configuration file. For an example, please try::
 
-    $ seir-model -c contacts_matrices/finland --visualize-compartments example_configs/finland
+    $ SEIR -c contacts_matrices/finland --visualize-compartments example_configs/finland
 
 Example contact pattern matrix can be found in the :code:`contacts_matrices/` directory of the repository in Github.
 
 Output file
 ~~~~~~~~~~~~
 
-The :code:`seir-model` tool outputs the computed model in a file called :code:`outfile.csv` (can be changed with the :code:`-o` option).
+The :code:`SEIR` tool outputs the computed model in a file called :code:`outfile.csv` (can be changed with the :code:`-o` option).
 The outputfile is a comma separated table containing the following simulation results:
 
 :code:`time`
