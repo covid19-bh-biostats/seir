@@ -352,14 +352,16 @@ class SEIR:
             if isinstance(population_exposed, (int, float)):
                 exposed = self._fix_size(population_exposed) /\
                     self.num_compartments
-            elif isinstance(population_exposed, np.ndarray):
+            elif isinstance(population_exposed, (list, np.ndarray)):
+                population_exposed = np.array(population_exposed)
                 assert population_exposed.size == self.num_compartments
                 exposed = population_exposed
 
             if isinstance(population_infected, (int, float)):
                 infected = self._fix_size(
                     population_infected) / self.num_compartments
-            elif isinstance(population_infected, np.ndarray):
+            elif isinstance(population_infected, (list, np.ndarray)):
+                population_infected = np.array(population_infected)
                 assert population_infected.size == self.num_compartments
                 infected = population_infected
 

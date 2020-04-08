@@ -25,14 +25,13 @@ WD = os.path.dirname(__file__)
 def main(config_file, contacts_matrix_file, visualize_compartments,
          output_file):
     """Console script for SEIR."""
-    # TODO: Handle somehow the creation of a restrictions function
     # TODO: Handle somehow the creation of an imports function
     # Setup the model
     if not config_file:
-        kwargs, initial_state_kwargs, sim_kwargs = parse_config_ini(
+        kwargs, initial_state_kwargs, sim_kwargs, restr_info = parse_config_ini(
             f'{WD}/model_configs/finland')
     else:
-        kwargs, initial_state_kwargs, sim_kwargs = parse_config_ini(
+        kwargs, initial_state_kwargs, sim_kwargs, restr_info = parse_config_ini(
             config_file)
 
     if contacts_matrix_file:
@@ -59,6 +58,7 @@ def main(config_file, contacts_matrix_file, visualize_compartments,
     visualize_seir_computation(
         results,
         compartments=kwargs['compartments'],
+        restrictions_info=restr_info,
         show_individual_compartments=visualize_compartments)
 
 

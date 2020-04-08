@@ -267,6 +267,76 @@ population_exposed
 population_infected
     The total number (or probability) of infected people
 
+:code:`[restrictions]`
+^^^^^^^^^^^^^^^^^^^^^^
+
+We can model restrictions such as social distancing and closing of schools
+by introducing time-dependence in the infectivity rate (matrix, if 
+compartmentalized model).
+
+Restrictions can be defined in the *config* file within sections named
+:code:`[restriction TITLE]`. You can define multiple restrictions in the
+same file.
+
+The restrictions :math:`R_{\alpha}(t)` are implemented as prefactors of 
+the infectivity rate :math:`\mathcal{I}` as
+
+.. math:
+
+    \mathcal{I} \to R_0\circ R_1 \circ \dots \circ R_{M-1} \mathcal{I}
+
+Restrictions on all interactions
+________________________________
+
+Define the day the restriction begins, the day the restriction is lifted,
+and the prefactor for the infectivity rate matrix between (and including)
+these days.
+
+.. code-block:: python
+
+    [restriction social-distancing]
+    day-begins = 20
+    day-ends = 180
+    infectivity modifier = 0.7
+
+
+Restrictions on all some interactions
+_____________________________________
+
+Define the day the restriction begins, the day the restriction is lifted,
+and the matrix-elements of the prefactor matrix :math:`R` of the infectivity
+rate matrix.
+
+You can define multiple elements of the prefactor-matrix on separate lines.
+For example, to decrease the contacts between the compartments :code:`0-4`,
+:code:`5-9`, :code:`15-19` with the compartments :code:`35-39`,:code:`40-44`
+(and vice versa) by 20%, and contacts between all compartments and the compartments
+:code:`60-64` and :code:`65+` by 80%, you specify the following
+
+.. code-block:: python
+
+    [restriction social-distancing experiment 2]
+    day-begins = 20
+    day-ends = 180
+    infectivity modifier = 
+        [ 0-4, 5-9, 15-19 ] : [ 35-39, 40-44 ] : 0.8
+        all : [ 60-64, 65+ ] : 0.2
+
+Restrictions from a file
+________________________
+
+Define the day the restriction begins, the day the restriction is lifted,
+and the file where the prefactor matrix :math:`R` is stored in CSV format,
+
+.. code-block:: python
+
+    [restriction social-distancing experiment 2]
+    day-begins = 20
+    day-ends = 180
+    infectivity modifier = file://my_data/restrictions_prefactor.csv 
+
+
+
 Contact patterns (compartmentalized models)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

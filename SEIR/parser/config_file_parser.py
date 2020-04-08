@@ -1,5 +1,7 @@
 import configparser
 
+from SEIR.parser.restrictions_section_parser import parse_restriction_sections
+
 
 def parse_config_ini(config_file):
     config = configparser.ConfigParser()
@@ -50,4 +52,8 @@ def parse_config_ini(config_file):
                     simulation_kwargs[key] = False
                 else:
                     simulation_kwargs[key] = value
-    return kwargs, initial_state_kwargs, simulation_kwargs
+
+    kwargs['restrictions_function'], restrictions_info =\
+        parse_restriction_sections(config, kwargs['compartments'])
+
+    return kwargs, initial_state_kwargs, simulation_kwargs, restrictions_info
