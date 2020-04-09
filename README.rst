@@ -1,4 +1,3 @@
-====
 SEIR
 ====
 
@@ -108,32 +107,32 @@ The :code:`[model]` section defines the parameters of the disease model. In its 
 
 Here the parameters are
 
-          incubation_period
-              Incubation period of the disease in days.
-          infectious_period
-              How long a patient can infect others (in days) after
-              the incubation period.
-          initial_R0
-              Basic reproductive number of the disease
-          hospitalization_probability
-              Probability that an infected person needs hospitalization
-          hospitalization_duration
-              Average duration of a hospitalization in days.
-          hospitalization_lag_from_onset
-              Average time (in days) from the onset of symptoms to admission
-              to hospital
-          icu_probability
-              Probability that an infected person needs hospitalization.
-          icu_duration
-              Average duration  of the need for intensive care in days.
-          icu_lag_from_onset
-              Average time (in days) from the onset of symptoms to admission to ICU.
-          death_probability
-              Probability that an infected person dies from the disease.
-          death_lag_from_onset
-              Average time from the onset of symptoms to death (in days).
-          population
-              The total population.
+  incubation_period
+      Incubation period of the disease in days.
+  infectious_period
+      How long a patient can infect others (in days) after
+      the incubation period.
+  initial_R0
+      Basic reproductive number of the disease
+  hospitalization_probability
+      Probability that an infected person needs hospitalization
+  hospitalization_duration
+      Average duration of a hospitalization in days.
+  hospitalization_lag_from_onset
+      Average time (in days) from the onset of symptoms to admission
+      to hospital
+  icu_probability
+      Probability that an infected person needs hospitalization.
+  icu_duration
+      Average duration  of the need for intensive care in days.
+  icu_lag_from_onset
+      Average time (in days) from the onset of symptoms to admission to ICU.
+  death_probability
+      Probability that an infected person dies from the disease.
+  death_lag_from_onset
+      Average time from the onset of symptoms to death (in days).
+  population
+      The total population.
 
 :code:`[model]` (compartmentalization)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -289,7 +288,7 @@ Restrictions can be defined in the *config* file within sections named
 :code:`[restriction TITLE]`. You can define multiple restrictions in the
 same file.
 
-The restrictions |Rat are implemented as prefactors of
+The restrictions |Rat| are implemented as prefactors of
 the infectivity rate |Infmat| as
 
 .. image:: https://latex.codecogs.com/svg.latex?\mathcal{I}\toR_0\circR_1\circ\dots\circR_{M-1}\mathcal{I}
@@ -305,7 +304,7 @@ Define the day the restriction begins, the day the restriction is lifted,
 and the prefactor for the infectivity rate matrix between (and including)
 these days.
 
-.. code-block:: python
+::
 
     [restriction social-distancing]
     day-begins = 20
@@ -317,7 +316,7 @@ Restrictions on all some interactions
 _____________________________________
 
 Define the day the restriction begins, the day the restriction is lifted,
-and the matrix-elements of the prefactor matrix |Rat| of the infectivity
+and the matrix-elements of the prefactor matrix R of the infectivity
 rate matrix.
 
 You can define multiple elements of the prefactor-matrix on separate lines.
@@ -326,7 +325,7 @@ For example, to decrease the contacts between the compartments :code:`0-4`,
 (and vice versa) by 20%, and contacts between all compartments and the compartments
 :code:`60-64` and :code:`65+` by 80%, you specify the following
 
-.. code-block:: python
+::
 
     [restriction social-distancing experiment 2]
     day-begins = 20
@@ -341,7 +340,7 @@ ________________________
 Define the day the restriction begins, the day the restriction is lifted,
 and the file where the prefactor matrix |Rat| is stored in CSV format,
 
-.. code-block:: python
+::
 
     [restriction social-distancing experiment 2]
     day-begins = 20
