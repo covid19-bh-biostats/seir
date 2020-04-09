@@ -18,14 +18,16 @@ WD = os.path.dirname(__file__)
 @click.option('--contacts_matrix_file', '-cm',
               type=click.Path(exists=True),
               help='Path to contact matrix file')
-@click.option('--visualize-compartments',
+@click.option('--visualize-compartments', '-vc',
               type=bool,
               is_flag=True)
+@click.option('--output_file_format', '-of',
+              type=click.Choice(['json', 'csv']), default='csv',
+              help='Output file format')
 @click.option('--output_file', '-o',
               type=str,
               help='Path to output file.')
-def main(config_file, contacts_matrix_file, visualize_compartments,
-         output_file):
+def main(config_file, contacts_matrix_file, visualize_compartments, output_file_format, output_file):
     """Console script for SEIR."""
     # TODO: Handle somehow the creation of an imports function
     # Setup the model
@@ -50,8 +52,12 @@ def main(config_file, contacts_matrix_file, visualize_compartments,
     results = model.evaluate_solution(time)
 
     # Save data
-    output_file = output_file or os.path.basename(config_file + ".csv")
-    results.to_csv(output_file)
+    if output_file == 'csv':
+        output_file = output_file or os.path.basename(f'{config_file}.csv')
+        results.to_csv(output_file)
+    elif output_file_format == 'json':
+        output_file = output_file or os.path.basename(f'{config_file}.json')
+        results.to_json(output_file)
 
     # Visualize the results
     visualize_seir_computation(

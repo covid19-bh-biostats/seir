@@ -14,6 +14,7 @@ This project adheres to `Semantic Versioning <https://semver.org/>`_.
 * Improved documentation
 * visualize_compartments is now a flag
 * short alternatives for parameters
+* Added support for json file output
 
 **Fixed**
 
