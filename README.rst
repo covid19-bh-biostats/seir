@@ -291,10 +291,10 @@ same file.
 The restrictions |Rat| are implemented as prefactors of
 the infectivity rate |Infmat| as
 
-.. image:: https://latex.codecogs.com/svg.latex?\mathcal{I}\toR_0\circR_1\circ\dots\circR_{M-1}\mathcal{I}
+.. image:: https://latex.codecogs.com/svg.latex?\\mathcal{I}\\to\,R_0\\circ\,R_1\\circ\\dots\\circ\,R_{M-1}\\mathcal{I}
 
-.. |Rat| image:: https://latex.codecogs.com/svg.latex?R_{\alpha}(t)
-.. |Infmat| image:: https://latex.codecogs.com/svg.latex?\mathcal{I}
+.. |Rat| image:: https://latex.codecogs.com/svg.latex?R_{\\alpha}(t)
+.. |Infmat| image:: https://latex.codecogs.com/svg.latex?\\mathcal{I}
 
 
 Restrictions on all interactions
