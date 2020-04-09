@@ -73,6 +73,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/covid19-bh-biostats/seir',
-    version='0.2.0',
+    version=module.__version__,
     zip_safe=False,
 )
