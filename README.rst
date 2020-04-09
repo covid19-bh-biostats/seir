@@ -55,8 +55,8 @@ Run the following command for an overview of all commands ::
 
 Run the following command from the root of this repository for a full demonstration of SEIR's features ::
 
-    SEIR -cf example_configs/finland_with_restrictions -cm contacts_matrices/finland --visualize-compartments
-
+ SEIR --config_file example_configs/finland_with_restrictions --contacts_matrix_file contacts_matrices/finland --visualize-compartments TRUE
+ 
 Config-files
 ~~~~~~~~~~~~
 
