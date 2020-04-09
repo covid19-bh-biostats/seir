@@ -1,0 +1,52 @@
+<form>
+    <p>Simulation</p>
+    <label for="max_simulation_time">Maximum simulation time:</label>
+    <input type="text" name="max_simulation_time" value="350"><br>
+    <label for="method">Method:</label>
+    <input type="text" name="method" value="DOP853"><br>
+    <label for="max_step">max step:</label>
+    <input type="text" name="max_step" value="0.5"><br>
+    <p>model</p>
+    <label for="population">population:</label>
+    <input type="text" name="population" value="5e6"><br>
+    <label for="incubation_period">incubation_period:</label>
+    <input type="text" name="incubation_period" value="3"><br>
+    <label for="infectious_period">infectious_period:</label>
+    <input type="text" name="infectious_period" value="7"><br>
+    <label for="initial_R0">initial_R0:</label>
+    <input type="text" name="initial_R0" value="2.5"><br>
+    <label for="hospitalization_probability">hospitalization_probability:</label>
+    <input type="text" name="hospitalization_probability" value="0.1"><br>
+    <label for="hospitalization_duration">hospitalization_duration:</label>
+    <input type="text" name="hospitalization_duration" value="20"><br>
+    <label for="hospitalization_lag_from_onset">hospitalization_lag_from_onset:</label>
+    <input type="text" name="hospitalization_lag_from_onset" value="7"><br>
+    <label for="icu_probability">icu_probability:</label>
+    <input type="text" name="icu_probability" value="0.01"><br>
+    <label for="icu_duration">icu_duration:</label>
+    <input type="text" name="icu_duration" value="10"><br>
+    <label for="icu_lag_from_onset">icu_lag_from_onset:</label>
+    <input type="text" name="icu_lag_from_onset" value="11"><br>
+    <label for="death_probability">death_probability:</label>
+    <input type="text" name="death_probability" value="0.1"><br>
+    <label for="death_lag_from_onset">death_lag_from_onset:</label>
+    <input type="text" name="death_lag_from_onset" value="25"><br>
+    
+    <p>initial_state</p>
+    <label for="population_exposed">population_exposed:</label>
+    <input type="text" name="population_exposed" value="0.005"><br>
+    <label for="population_infected">population_infected:</label>
+    <input type="text" name="population_infected" value="0.005"><br>
+    <label for="probabilities">probabilities:</label>
+    <input type="text" name="probabilities" value="True"><br>
+
+    <input type="submit" value="Submit" method="get" >
+</form>
+<div class="container">
+    <div class="row">
+        <div class="chart" id="lines">
+            After the simulation end the data will be here:
+            {{ datahere }} o
+        </div>
+    </div>
+</div>
