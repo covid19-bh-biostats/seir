@@ -289,12 +289,14 @@ Restrictions can be defined in the *config* file within sections named
 :code:`[restriction TITLE]`. You can define multiple restrictions in the
 same file.
 
-The restrictions :math:`R_{\alpha}(t)` are implemented as prefactors of
-the infectivity rate :math:`\mathcal{I}` as
+The restrictions |Rat are implemented as prefactors of
+the infectivity rate |Infmat| as
 
-.. math:
+.. image:: https://latex.codecogs.com/svg.latex?\mathcal{I}\toR_0\circR_1\circ\dots\circR_{M-1}\mathcal{I}
 
-    \mathcal{I} \to R_0\circ R_1 \circ \dots \circ R_{M-1} \mathcal{I}
+.. |Rat| image:: https://latex.codecogs.com/svg.latex?R_{\alpha}(t)
+.. |Infmat| image:: https://latex.codecogs.com/svg.latex?\mathcal{I}
+
 
 Restrictions on all interactions
 ________________________________
@@ -315,7 +317,7 @@ Restrictions on all some interactions
 _____________________________________
 
 Define the day the restriction begins, the day the restriction is lifted,
-and the matrix-elements of the prefactor matrix :math:`R` of the infectivity
+and the matrix-elements of the prefactor matrix |Rat| of the infectivity
 rate matrix.
 
 You can define multiple elements of the prefactor-matrix on separate lines.
@@ -337,7 +339,7 @@ Restrictions from a file
 ________________________
 
 Define the day the restriction begins, the day the restriction is lifted,
-and the file where the prefactor matrix :math:`R` is stored in CSV format,
+and the file where the prefactor matrix |Rat| is stored in CSV format,
 
 .. code-block:: python
 
