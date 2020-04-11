@@ -102,7 +102,7 @@ def _get_infectivity_modifier_from_file(path: Text, num_all_compartments: int) -
     return modifier_matrix
 
 
-def _parse_infectivity_modifier_matrix_definition_single_line(line: Text,all_compartments: List[Text])\
+def _parse_infectivity_modifier_matrix_definition_single_line(line: Text, all_compartments: List[Text])\
                                                               -> Tuple[List[int], List[int], float]:
     """
     Parses a single line defining modifications to the infectivity matrix.
@@ -163,7 +163,7 @@ def _parse_infectivity_modifier_matrix_definition_single_line(line: Text,all_com
         infectivity_matrix_indexes_to_modify[:, 1], modifier
 
 
-def _parse_infectivity_modifier_matrix_definition_string(infectivity_modifier_string: Text,all_compartments: List[Text])\
+def _parse_infectivity_modifier_matrix_definition_string(infectivity_modifier_string: Text, all_compartments: List[Text])\
                                                          -> np.ndarray:
     """
     Parses the infectivity rate/restriction matrix definition string
