@@ -3,8 +3,6 @@
 """Tests for `SEIR` package."""
 import os
 
-import pytest
-
 from click.testing import CliRunner
 
 from SEIR import cli
