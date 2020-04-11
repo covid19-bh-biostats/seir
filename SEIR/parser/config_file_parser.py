@@ -53,7 +53,6 @@ def parse_config_ini(config_file):
                 else:
                     simulation_kwargs[key] = value
 
-    kwargs['restrictions_function'], restrictions_info =\
-        parse_restriction_sections(config, kwargs['compartments'])
+    kwargs['restrictions_function'], restrictions_info = parse_restriction_sections(config, kwargs['compartments'])
 
     return kwargs, initial_state_kwargs, simulation_kwargs, restrictions_info

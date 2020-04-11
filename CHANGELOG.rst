@@ -4,6 +4,19 @@ Changelog
 This document records all notable changes to `seir <github.com/covid19-bh-biostats/seir/>`_.
 This project adheres to `Semantic Versioning <https://semver.org/>`_.
 
+0.2.2 (2020-04-11)
+------------------
+
+**Added**
+
+* Tests for config_file_parser and restriction_section_parser
+
+**Fixed**
+
+**Dependencies**
+
+**Deprecated**
+
 
 0.2.0 (2020-04-08)
 ------------------
