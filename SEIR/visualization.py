@@ -85,7 +85,7 @@ def visualize_seir_computation(results: pd.DataFrame,
 
         ax.yaxis.set_major_formatter(EngFormatter())
         ax = fig.add_subplot(gs[1])
-        ax.legend(lines, compartments)
+        ax.legend(lines, compartments, title='Age')
         ax.set_xticks(())
         ax.set_yticks(())
         ax.set_axis_off()
