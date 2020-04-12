@@ -13,10 +13,13 @@ This project adheres to `Semantic Versioning <https://semver.org/>`_.
 
 **Fixed**
 
+* Added make, automake, gcc, g++, git to Dockerfile to be able to compile numpy
+
 **Dependencies**
 
 **Deprecated**
 
+* Travis build (less complete than Github workflows)
 
 0.2.0 (2020-04-08)
 ------------------
