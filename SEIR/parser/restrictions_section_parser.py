@@ -96,8 +96,7 @@ def _get_infectivity_modifier_from_file(path: Text, num_all_compartments: int) -
                               f"{num_all_compartments})"))
 
     else:
-        raise ValueError((f"Infectivity modifier file "
-                          f"{path} does not exist."))
+        raise ValueError(f"Infectivity modifier file {path} does not exist.")
 
     return modifier_matrix
 
@@ -314,8 +313,7 @@ def parse_restriction_sections(config: configparser.ConfigParser, compartments: 
     restr_funs = []
     restr_info: List[Dict[Text, Union[int, Text]]] = []
     for rsec in restriction_sections:
-        fun, info = _parse_restriction_section(dict(config.items(rsec)), rsec,
-                                               compartments)
+        fun, info = _parse_restriction_section(dict(config.items(rsec)), rsec, compartments)
         restr_funs.append(fun)
         restr_info.append(info)
 
