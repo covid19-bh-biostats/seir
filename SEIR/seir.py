@@ -393,11 +393,11 @@ class SEIR:
             self.death_lag_from_onset
         ])
         backwards_solution = solve_ivp(fun=self._backwards_call,
-                             t_span=[0, tmin],
-                             y0=self.Y0,
-                             dense_output=True,
-                             max_step=max_step,
-                             method=method)
+                                       t_span=[0, tmin],
+                                       y0=self.Y0,
+                                       dense_output=True,
+                                       max_step=max_step,
+                                       method=method)
         solution = solve_ivp(fun=self,
                              t_span=[0, max_simulation_time],
                              y0=self.Y0,
