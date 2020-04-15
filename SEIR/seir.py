@@ -314,9 +314,6 @@ class SEIR:
             dI_dt += DI
         return np.concatenate([dS_dt, dE_dt, dI_dt, dR_dt])
 
-    def _backwards_call(self, t, Y):
-        return -1*self(t, Y)
-
     def set_initial_state(self,
                           population_exposed: Union[int, float, np.ndarray],
                           population_infected: Union[int, float, np.ndarray],
@@ -387,30 +384,21 @@ class SEIR:
             How many days forward to simulate the model
         """
         assert self.Y0 is not None
-        tmin = np.max([
-            self.hospitalization_lag_from_onset,
-            self.icu_lag_from_onset,
-            self.death_lag_from_onset
-        ])
-        backwards_solution = solve_ivp(fun=self._backwards_call,
-                                       t_span=[0, tmin],
-                                       y0=self.Y0,
-                                       dense_output=True,
-                                       max_step=max_step,
-                                       method=method)
         solution = solve_ivp(fun=self,
                              t_span=[0, max_simulation_time],
                              y0=self.Y0,
                              dense_output=True,
                              max_step=max_step,
                              method=method)
-
         # Create a callable returning the solution of the model
         def SEIR_solution(time: np.ndarray):
             postime_mask = time >= 0
-            possol = np.swapaxes(solution.sol(time[postime_mask]), 0, 1)
-            negsol = np.swapaxes(backwards_solution.sol(time[~postime_mask]), 0, 1)
-            return np.vstack([possol, negsol])
+            if np.sum(postime_mask) == time.size:
+                return np.swapaxes(solution.sol(time), 0, 1)
+            else:
+                possol = np.swapaxes(solution.sol(time[postime_mask]), 0, 1)
+                negsol = np.repeat(np.expand_dims(self.Y0, 0), time.size - sum(postime_mask), 0)
+                return np.vstack([negsol, possol])
 
         self.SEIR_solution = SEIR_solution
 
@@ -421,7 +409,8 @@ class SEIR:
         Input
         -----
         time: np.ndarray
-            Time instances for which to evaluate the simulated model
+            Time instances for which to evaluate the simulated model.
+            Expected to be equidistant.
 
         Returns
         -------
@@ -466,11 +455,11 @@ class SEIR:
 
         SEIR = self.SEIR_solution(time)
         S, E, I, R = np.split(SEIR, 4, axis=-1)
+        S0, E0, I0, R0 = np.split(self.Y0, 4)
 
         # Compute the cumulative sum of infected people
         I_new_cases_a_day = np.divide(E, self.incubation_period)
-        Icumulative = np.cumsum(I_new_cases_a_day, axis=0)
-
+        Icumulative = I0+np.cumsum(I_new_cases_a_day, axis=0)
         # Compute the number of hospitalized people for each day
         Shl, Ehl, Ihl, Rhl = np.split(
             self.SEIR_solution(time - self.hospitalization_lag_from_onset),
