@@ -89,7 +89,7 @@ class SEIR:
         imported_cases_function: Optional[Callable]
         """
         # Set a single compartment if nothing was provided
-        if compartments:
+        if compartments is not None:
             self.compartments = compartments
         else:
             self.compartments = ['All']
@@ -314,6 +314,9 @@ class SEIR:
             dI_dt += DI
         return np.concatenate([dS_dt, dE_dt, dI_dt, dR_dt])
 
+    def _backwards_call(self, t, Y):
+        return -1*self(t, Y)
+
     def set_initial_state(self,
                           population_exposed: Union[int, float, np.ndarray],
                           population_infected: Union[int, float, np.ndarray],
@@ -384,7 +387,17 @@ class SEIR:
             How many days forward to simulate the model
         """
         assert self.Y0 is not None
-
+        tmin = np.max([
+            self.hospitalization_lag_from_onset,
+            self.icu_lag_from_onset,
+            self.death_lag_from_onset
+        ])
+        backwards_solution = solve_ivp(fun=self._backwards_call,
+                                       t_span=[0, tmin],
+                                       y0=self.Y0,
+                                       dense_output=True,
+                                       max_step=max_step,
+                                       method=method)
         solution = solve_ivp(fun=self,
                              t_span=[0, max_simulation_time],
                              y0=self.Y0,
@@ -395,12 +408,9 @@ class SEIR:
         # Create a callable returning the solution of the model
         def SEIR_solution(time: np.ndarray):
             postime_mask = time >= 0
-
-            SEIR = np.swapaxes(solution.sol(time[postime_mask]), 0, 1)
-            INI = np.repeat(np.expand_dims(self.Y0, 0),
-                            time.size - np.count_nonzero(postime_mask),
-                            axis=0)
-            return np.concatenate([INI, SEIR])
+            possol = np.swapaxes(solution.sol(time[postime_mask]), 0, 1)
+            negsol = np.swapaxes(backwards_solution.sol(time[~postime_mask]), 0, 1)
+            return np.vstack([possol, negsol])
 
         self.SEIR_solution = SEIR_solution
 
@@ -468,7 +478,7 @@ class SEIR:
             axis=-1)
         H_new_cases_a_day = np.multiply(self.hospitalization_probability,
                                         np.divide(Ehl, self.incubation_period))
-        Hwindow = np.ones(round(self.hospitalization_duration))
+        Hwindow = np.ones(int(round(self.hospitalization_duration)))
         H_active_cases = np.stack([
             np.convolve(H_new_cases_a_day[:, i], Hwindow, mode='same')
             for i in range(self.num_compartments)
@@ -480,7 +490,7 @@ class SEIR:
         E_icu_lag = np.split(SEIR_icu_lag, 4, axis=-1)[2]
         ICU_new_cases_a_day = np.multiply(
             self.icu_probability, np.divide(E_icu_lag, self.incubation_period))
-        ICUwindow = np.ones(round(self.icu_duration))
+        ICUwindow = np.ones(int(round(self.icu_duration)))
         ICU_active_cases = np.stack([
             np.convolve(ICU_new_cases_a_day[:, i], ICUwindow, mode='same')
             for i in range(self.num_compartments)
