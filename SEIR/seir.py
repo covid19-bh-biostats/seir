@@ -3,7 +3,7 @@ import itertools
 from typing import Any, Callable, List, Optional, Union, Text
 
 import numpy as np
-from scipy.integrate import solve_ivp, cumtrapz
+from scipy.integrate import solve_ivp, cumtrapz, trapz
 import pandas as pd
 
 
@@ -387,7 +387,12 @@ class SEIR:
         """
         assert self.Y0 is not None
         solution = solve_ivp(
-            fun=self, t_span=[t0, max_simulation_time], y0=self.Y0, dense_output=True, max_step=max_step, method=method,
+            fun=self,
+            t_span=[t0, max_simulation_time],
+            y0=self.Y0,
+            dense_output=True,
+            max_step=max_step,
+            method=method,
         )
 
         # Create a callable returning the solution of the model
@@ -435,7 +440,7 @@ class SEIR:
             - ...
             - infected (total)
             - (removed, <Compartment 1>)
-            - (removed, <Compartment 2>(
+            - (removed, <Compartment 2>)
             - ...
             - removed
             - (hospitalized (active), <Compartment 1>)
@@ -454,38 +459,72 @@ class SEIR:
         # Evaluate SEIR model results
         assert self.SEIR_solution is not None
 
-        dt = time[1]-time[0]
+        dt = time[1] - time[0]
 
+        # Positive time mask
+        Mpos = time >= self.t0
+        Mneg = time < self.t0
         SEIR = self.SEIR_solution(time)
         S, E, I, R = np.split(SEIR, 4, axis=-1)
         S0, E0, I0, R0 = np.split(self.Y0, 4)
 
         # Compute the cumulative sum of infected people
-        Inew = cumtrapz(np.divide(E, self.incubation_period), x=time, axis=0, initial=0)
-        postime = time >= self.t0
-        Inew[~postime, :] = -1 * np.flip(Inew[~postime, :], axis=0)
-        Icumulative = I0 + Inew
+        if np.any(Mpos):
+            Ipos_zero = trapz(
+                np.divide(np.concatenate([E0, E[Mpos, :][0, :]], axis=0), self.incubation_period),
+                x=[0, time[Mpos][0]],
+                axis=0
+            )
+            Inew_pos = cumtrapz(np.divide(E[Mpos, :], self.incubation_period), x=time[Mpos], axis=0,
+                                initial=0)+Ipos_zero
+        if np.any(Mneg):
+            Ineg_zero = trapz(
+                np.divide(np.concatenate([E[Mneg, :][-1, :], E0], axis=0), self.incubation_period),
+                x=[time[Mneg][-1], 0],
+                axis=0
+            )
+            Inew_neg = np.flip(
+                cumtrapz(
+                    np.divide(np.flip(E[Mneg, :], axis=0), self.incubation_period),
+                    x=np.flip(time[Mneg]),
+                    axis=0,
+                    initial=0
+                ),
+                axis=0
+            ) - Ineg_zero
 
+        if np.any(Mpos) and np.any(Mneg):
+            Icumulative = I0 + np.concatenate([Inew_neg, Inew_pos], axis=0)
+        elif np.any(Mpos):
+            Icumulative = I0+Inew_pos
+        elif np.any(Mneg):
+            Icumulative = I0+Inew_neg
+        else:
+            raise RuntimeError("Should not happen.")
 
         # Compute the number of hospitalized people for each day
         Shl, Ehl, Ihl, Rhl = np.split(self.SEIR_solution(time - self.hospitalization_lag_from_onset), 4, axis=-1)
         H_new_cases_a_day = cumtrapz(
             np.multiply(self.hospitalization_probability, np.divide(Ehl, self.incubation_period)),
-            x=time, axis=0, initial=0)
-        Hwindow = np.ones(int(round(self.hospitalization_duration/dt)))
+            x=time,
+            axis=0,
+            initial=0
+        )
+        Hwindow = np.ones(int(round(self.hospitalization_duration / dt)))
         H_active_cases = np.stack(
-            [np.convolve(H_new_cases_a_day[:, i], Hwindow, mode='same')*dt for i in range(self.num_compartments)], axis=-1
+            [np.convolve(H_new_cases_a_day[:, i], Hwindow, mode='same') * dt for i in range(self.num_compartments)],
+            axis=-1
         )
 
         # Compute the number of people in ICU for each day
         SEIR_icu_lag = self.SEIR_solution(time - self.icu_lag_from_onset)
         E_icu_lag = np.split(SEIR_icu_lag, 4, axis=-1)[2]
         ICU_new_cases_a_day = cumtrapz(
-            np.multiply(self.icu_probability, np.divide(E_icu_lag, self.incubation_period)),
-            x=time, axis=0, initial=0)
-        ICUwindow = np.ones(int(round(self.icu_duration/dt)))
+            np.multiply(self.icu_probability, np.divide(E_icu_lag, self.incubation_period)), x=time, axis=0, initial=0
+        )
+        ICUwindow = np.ones(int(round(self.icu_duration / dt)))
         ICU_active_cases = np.stack(
-            [np.convolve(ICU_new_cases_a_day[:, i], ICUwindow, mode='same')*dt for i in range(self.num_compartments)],
+            [np.convolve(ICU_new_cases_a_day[:, i], ICUwindow, mode='same') * dt for i in range(self.num_compartments)],
             axis=-1
         )
 
@@ -494,7 +533,10 @@ class SEIR:
         E_death_lag = np.split(SEIR_death_lag, 4, axis=-1)[1]
         deaths = cumtrapz(
             np.multiply(self.death_probability, np.divide(E_death_lag, self.incubation_period)),
-            x=time, axis=0, initial=0)
+            x=time,
+            axis=0,
+            initial=0
+        )
 
         # Compute the total cases over all compartments
         Sall = np.expand_dims(np.sum(S, axis=-1), -1)
