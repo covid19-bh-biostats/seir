@@ -3,34 +3,36 @@ import itertools
 from typing import Any, Callable, List, Optional, Union, Text
 
 import numpy as np
-from scipy.integrate import solve_ivp
+from scipy.integrate import solve_ivp, cumtrapz
 import pandas as pd
 
 
 class SEIR:
+
     """
     Implementation of a SEIR model
     """
 
-    def __init__(self,
-                 *,
-                 incubation_period: Union[int, float, np.ndarray],
-                 infectious_period: Union[int, float, np.ndarray],
-                 initial_R0: Union[int, float],
-                 hospitalization_probability: Union[float, np.ndarray],
-                 hospitalization_duration: Union[float, int],
-                 hospitalization_lag_from_onset: Union[float, int],
-                 icu_probability: Union[float, int],
-                 icu_duration: Union[float, int],
-                 icu_lag_from_onset: Union[float, np.ndarray],
-                 death_probability: Union[float, np.ndarray],
-                 death_lag_from_onset: Union[float, int],
-                 population: Union[float, np.ndarray],
-                 compartments: Optional[List[Any]] = None,
-                 contacts_matrix: Optional[np.ndarray] = None,
-                 restrictions_function: Optional[
-                     Callable[[float], Union[float, np.ndarray]]] = None,
-                 imported_cases_function: Optional[Callable] = None):
+    def __init__(
+            self,
+            *,
+            incubation_period: Union[int, float, np.ndarray],
+            infectious_period: Union[int, float, np.ndarray],
+            initial_R0: Union[int, float],
+            hospitalization_probability: Union[float, np.ndarray],
+            hospitalization_duration: Union[float, int],
+            hospitalization_lag_from_onset: Union[float, int],
+            icu_probability: Union[float, int],
+            icu_duration: Union[float, int],
+            icu_lag_from_onset: Union[float, np.ndarray],
+            death_probability: Union[float, np.ndarray],
+            death_lag_from_onset: Union[float, int],
+            population: Union[float, np.ndarray],
+            compartments: Optional[List[Any]] = None,
+            contacts_matrix: Optional[np.ndarray] = None,
+            restrictions_function: Optional[Callable[[float], Union[float, np.ndarray]]] = None,
+            imported_cases_function: Optional[Callable] = None
+    ):
         """
         Initializes the SEIR models parameters and computes the infectivity
         rate from the contacts matrix, R0, and infective_duration. Supports
@@ -100,8 +102,7 @@ class SEIR:
         self.incubation_period = self._fix_size(incubation_period)
         self.infectious_period = self._fix_size(infectious_period)
         self.initial_R0 = initial_R0
-        self.hospitalization_probability = self._fix_size(
-            hospitalization_probability)
+        self.hospitalization_probability = self._fix_size(hospitalization_probability)
         self.hospitalization_duration = hospitalization_duration
         self.hospitalization_lag_from_onset = hospitalization_lag_from_onset
         self.icu_probability = self._fix_size(icu_probability)
@@ -124,15 +125,13 @@ class SEIR:
             assert contacts_matrix.shape[0] == len(self.compartments)
             assert contacts_matrix.shape[1] == len(self.compartments)
         else:
-            contacts_matrix = np.ones(
-                (self.num_compartments, self.num_compartments))
+            contacts_matrix = np.ones((self.num_compartments, self.num_compartments))
 
-        self.infectivity_matrix = self._compute_infectivity_matrix(
-            contacts_matrix)
+        self.infectivity_matrix = self._compute_infectivity_matrix(contacts_matrix)
 
         self.restrictions_function = restrictions_function
         self.imported_cases_function = imported_cases_function
-
+        self._inf_matrix = self.infectivity_matrix.copy()  # Allocate once the infectivity matrix used in computation
         # Initial state
         self.Y0: Optional[np.ndarray] = None
 
@@ -145,12 +144,9 @@ class SEIR:
             incubation_period: Optional[Union[int, float, np.ndarray]] = None,
             infectious_period: Optional[Union[int, float, np.ndarray]] = None,
             initial_R0: Optional[Union[int, float]] = None,
-            hospitalization_probability: Optional[
-                Union[float, np.ndarray]] = None,
-            hospitalization_duration: Optional[
-                Union[float, np.ndarray]] = None,
-            hospitalization_lag_from_onset: Optional[
-                Union[float, np.ndarray]] = None,
+            hospitalization_probability: Optional[Union[float, np.ndarray]] = None,
+            hospitalization_duration: Optional[Union[float, np.ndarray]] = None,
+            hospitalization_lag_from_onset: Optional[Union[float, np.ndarray]] = None,
             icu_probability: Optional[Union[float, np.ndarray]] = None,
             icu_duration: Optional[Union[float, np.ndarray]] = None,
             icu_lag_from_onset: Optional[Union[float, np.ndarray]] = None,
@@ -159,9 +155,9 @@ class SEIR:
             population: Optional[Union[float, np.ndarray]] = None,
             compartments: Optional[List[Any]] = None,
             contacts_matrix: Optional[np.ndarray] = None,
-            restrictions_function: Optional[
-                Callable[[float], Union[float, np.ndarray]]] = None,
-            imported_cases_function: Optional[Callable] = None):
+            restrictions_function: Optional[Callable[[float], Union[float, np.ndarray]]] = None,
+            imported_cases_function: Optional[Callable] = None
+    ):
         """
         Initializes the SEIR models parameters and computes the infectivity
         rate from the contacts matrix, R0, and infective_duration. Supports
@@ -221,8 +217,7 @@ class SEIR:
         """
         raise NotImplementedError("TODO")
 
-    def _compute_infectivity_matrix(self,
-                                    contacts_matrix: np.ndarray) -> np.ndarray:
+    def _compute_infectivity_matrix(self, contacts_matrix: np.ndarray) -> np.ndarray:
         r"""
         Computes and returns the infectivity matrix $\mathcal{I}_{a,a^*}$
         from the contacts matrix, R_0, and infective duration.
@@ -294,30 +289,38 @@ class SEIR:
         dY/dt : np.ndarray with same shape as the input `Y`
         """
         if self.restrictions_function:
-            infectivity_matrix = np.multiply(self.restrictions_function(t),
-                                             self.infectivity_matrix)
-        else:
-            infectivity_matrix = self.infectivity_matrix
+            self._inf_matrix[:, :] = np.multiply(self.restrictions_function(t), self.infectivity_matrix)
 
-        Sa, Ea, Ia, Ra = np.split(Y, 4)
+        # Create views to the state Y
+        Sa = Y[:self.num_compartments]
+        Ea = Y[self.num_compartments:2 * self.num_compartments]
+        Ia = Y[2 * self.num_compartments:3 * self.num_compartments]
+        Ra = Y[3 * self.num_compartments:]
 
-        dS_dt = -np.divide(Sa, self.population) * (infectivity_matrix @ Ia)
-        dE_dt = -dS_dt - np.divide(Ea, self.incubation_period)
-        dI_dt = np.divide(Ea, self.incubation_period) - np.divide(
-            Ia, self.infectious_period)
-        dR_dt = np.divide(Ia, self.infectious_period)
+        res = np.zeros(4 * self.num_compartments)
+        dS_dt = res[:self.num_compartments]
+        dE_dt = res[self.num_compartments:2 * self.num_compartments]
+        dI_dt = res[2 * self.num_compartments:3 * self.num_compartments]
+        dR_dt = res[3 * self.num_compartments:]
+
+        dS_dt[:] = -np.divide(Sa, self.population) * (self._inf_matrix @ Ia)
+        dE_dt[:] = -dS_dt - np.divide(Ea, self.incubation_period)
+        dI_dt[:] = np.divide(Ea, self.incubation_period) - np.divide(Ia, self.infectious_period)
+        dR_dt[:] = np.divide(Ia, self.infectious_period)
 
         if self.imported_cases_function:
             DS, DE, DI = self.imported_cases_function(t)
             dS_dt += DS
             dE_dt += DE
             dI_dt += DI
-        return np.concatenate([dS_dt, dE_dt, dI_dt, dR_dt])
+        return res
 
-    def set_initial_state(self,
-                          population_exposed: Union[int, float, np.ndarray],
-                          population_infected: Union[int, float, np.ndarray],
-                          probabilities: bool = False):
+    def set_initial_state(
+            self,
+            population_exposed: Union[int, float, np.ndarray],
+            population_infected: Union[int, float, np.ndarray],
+            probabilities: bool = False
+    ):
         """
         Sets the initial state of the population system.
 
@@ -358,8 +361,7 @@ class SEIR:
                 exposed = population_exposed
 
             if isinstance(population_infected, (int, float)):
-                infected = self._fix_size(
-                    population_infected) / self.num_compartments
+                infected = self._fix_size(population_infected) / self.num_compartments
             elif isinstance(population_infected, (list, np.ndarray)):
                 population_infected = np.array(population_infected)
                 assert population_infected.size == self.num_compartments
@@ -371,10 +373,10 @@ class SEIR:
 
         self.Y0 = np.concatenate([susceptible, exposed, infected, removed])
 
-    def simulate(self,
-                 max_simulation_time: Union[int, float],
-                 max_step: float = 0.5,
-                 method: Text = 'DOP853'):
+    def simulate(
+            self, max_simulation_time: Union[int, float], t0: float = 0.0, max_step: float = 0.5,
+            method: Text = 'DOP853'
+    ):
         """
         Simulates the SEIR model.
 
@@ -384,15 +386,13 @@ class SEIR:
             How many days forward to simulate the model
         """
         assert self.Y0 is not None
-        solution = solve_ivp(fun=self,
-                             t_span=[0, max_simulation_time],
-                             y0=self.Y0,
-                             dense_output=True,
-                             max_step=max_step,
-                             method=method)
+        solution = solve_ivp(
+            fun=self, t_span=[t0, max_simulation_time], y0=self.Y0, dense_output=True, max_step=max_step, method=method,
+        )
+
         # Create a callable returning the solution of the model
         def SEIR_solution(time: np.ndarray):
-            postime_mask = time >= 0
+            postime_mask = time >= t0
             if np.sum(postime_mask) == time.size:
                 return np.swapaxes(solution.sol(time), 0, 1)
             else:
@@ -400,6 +400,7 @@ class SEIR:
                 negsol = np.repeat(np.expand_dims(self.Y0, 0), time.size - sum(postime_mask), 0)
                 return np.vstack([negsol, possol])
 
+        self.t0 = t0
         self.SEIR_solution = SEIR_solution
 
     def evaluate_solution(self, time: np.ndarray):
@@ -453,46 +454,47 @@ class SEIR:
         # Evaluate SEIR model results
         assert self.SEIR_solution is not None
 
+        dt = time[1]-time[0]
+
         SEIR = self.SEIR_solution(time)
         S, E, I, R = np.split(SEIR, 4, axis=-1)
         S0, E0, I0, R0 = np.split(self.Y0, 4)
 
         # Compute the cumulative sum of infected people
-        I_new_cases_a_day = np.divide(E, self.incubation_period)
-        Icumulative = I0+np.cumsum(I_new_cases_a_day, axis=0)
+        Inew = cumtrapz(np.divide(E, self.incubation_period), x=time, axis=0, initial=0)
+        postime = time >= self.t0
+        Inew[~postime, :] = -1 * np.flip(Inew[~postime, :], axis=0)
+        Icumulative = I0 + Inew
+
+
         # Compute the number of hospitalized people for each day
-        Shl, Ehl, Ihl, Rhl = np.split(
-            self.SEIR_solution(time - self.hospitalization_lag_from_onset),
-            4,
-            axis=-1)
-        H_new_cases_a_day = np.multiply(self.hospitalization_probability,
-                                        np.divide(Ehl, self.incubation_period))
-        Hwindow = np.ones(int(round(self.hospitalization_duration)))
-        H_active_cases = np.stack([
-            np.convolve(H_new_cases_a_day[:, i], Hwindow, mode='same')
-            for i in range(self.num_compartments)
-        ],
-            axis=-1)
+        Shl, Ehl, Ihl, Rhl = np.split(self.SEIR_solution(time - self.hospitalization_lag_from_onset), 4, axis=-1)
+        H_new_cases_a_day = cumtrapz(
+            np.multiply(self.hospitalization_probability, np.divide(Ehl, self.incubation_period)),
+            x=time, axis=0, initial=0)
+        Hwindow = np.ones(int(round(self.hospitalization_duration/dt)))
+        H_active_cases = np.stack(
+            [np.convolve(H_new_cases_a_day[:, i], Hwindow, mode='same')*dt for i in range(self.num_compartments)], axis=-1
+        )
 
         # Compute the number of people in ICU for each day
         SEIR_icu_lag = self.SEIR_solution(time - self.icu_lag_from_onset)
         E_icu_lag = np.split(SEIR_icu_lag, 4, axis=-1)[2]
-        ICU_new_cases_a_day = np.multiply(
-            self.icu_probability, np.divide(E_icu_lag, self.incubation_period))
-        ICUwindow = np.ones(int(round(self.icu_duration)))
-        ICU_active_cases = np.stack([
-            np.convolve(ICU_new_cases_a_day[:, i], ICUwindow, mode='same')
-            for i in range(self.num_compartments)
-        ],
-            axis=-1)
+        ICU_new_cases_a_day = cumtrapz(
+            np.multiply(self.icu_probability, np.divide(E_icu_lag, self.incubation_period)),
+            x=time, axis=0, initial=0)
+        ICUwindow = np.ones(int(round(self.icu_duration/dt)))
+        ICU_active_cases = np.stack(
+            [np.convolve(ICU_new_cases_a_day[:, i], ICUwindow, mode='same')*dt for i in range(self.num_compartments)],
+            axis=-1
+        )
 
         # Compute the total number of deaths
         SEIR_death_lag = self.SEIR_solution(time - self.death_lag_from_onset)
         E_death_lag = np.split(SEIR_death_lag, 4, axis=-1)[1]
-        DEATH_new_cases_a_day = np.multiply(
-            self.death_probability,
-            np.divide(E_death_lag, self.incubation_period))
-        deaths = np.cumsum(DEATH_new_cases_a_day, axis=0)
+        deaths = cumtrapz(
+            np.multiply(self.death_probability, np.divide(E_death_lag, self.incubation_period)),
+            x=time, axis=0, initial=0)
 
         # Compute the total cases over all compartments
         Sall = np.expand_dims(np.sum(S, axis=-1), -1)
@@ -505,20 +507,21 @@ class SEIR:
         deaths_all = np.expand_dims(np.sum(deaths, axis=-1), -1)
 
         # Form the results dataframe
-        data = np.concatenate([
-            np.expand_dims(time, -1), S, Sall, E, Eall, I, Iall, Icumulative,
-            Icum_all, R, Rall, H_active_cases, H_all, ICU_active_cases,
-            ICU_all, deaths, deaths_all
-        ],
-            axis=-1)
+        data = np.concatenate(
+            [
+                np.expand_dims(time, -1), S, Sall, E, Eall, I, Iall, Icumulative, Icum_all, R, Rall, H_active_cases,
+                H_all, ICU_active_cases, ICU_all, deaths, deaths_all
+            ],
+            axis=-1
+        )
         columns = [
-            'susceptible', 'exposed', 'infected (active)', 'infected (total)',
-            'removed', 'hospitalized (active)', 'in ICU', 'deaths'
+            'susceptible', 'exposed', 'infected (active)', 'infected (total)', 'removed', 'hospitalized (active)',
+            'in ICU', 'deaths'
         ]
         all_columns = ['time'] + list(
-            itertools.chain.from_iterable([
-                list(itertools.product([colname], self.compartments)) +
-                [colname] for colname in columns
-            ]))
+            itertools.chain.from_iterable(
+                [list(itertools.product([colname], self.compartments)) + [colname] for colname in columns]
+            )
+        )
 
         return pd.DataFrame(data, columns=all_columns)
