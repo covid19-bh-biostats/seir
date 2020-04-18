@@ -4,6 +4,7 @@ from typing import Any, Callable, List, Optional, Union, Text
 
 import numpy as np
 from scipy.integrate import solve_ivp, cumtrapz, trapz
+from scipy.stats import linregress
 import pandas as pd
 
 
@@ -455,6 +456,8 @@ class SEIR:
             - (deaths, <Compartment 2>)
             - ...
             - deaths
+
+            Note that deaths is the number of deaths since t=t0
         """
         # Evaluate SEIR model results
         assert self.SEIR_solution is not None
@@ -462,83 +465,65 @@ class SEIR:
         dt = time[1] - time[0]
 
         # Positive time mask
-        Mpos = time >= self.t0
-        Mneg = time < self.t0
+        idx_pos = np.where(time >= self.t0)[0]
+        idx_neg = np.where(time < self.t0)[0]
         SEIR = self.SEIR_solution(time)
         S, E, I, R = np.split(SEIR, 4, axis=-1)
         S0, E0, I0, R0 = np.split(self.Y0, 4)
 
         # Compute the cumulative sum of infected people
-        if np.any(Mpos):
+        if idx_pos.size > 0:
             Ipos_zero = trapz(
-                np.divide(np.concatenate([E0, E[Mpos, :][0, :]], axis=0), self.incubation_period),
-                x=[0, time[Mpos][0]],
+                np.divide(np.vstack([E0, E[idx_pos[0], :]]), self.incubation_period),
+                x=[0, time[idx_pos[0]]],
                 axis=0
             )
-            Inew_pos = cumtrapz(np.divide(E[Mpos, :], self.incubation_period), x=time[Mpos], axis=0,
-                                initial=0)+Ipos_zero
-        if np.any(Mneg):
-            Ineg_zero = trapz(
-                np.divide(np.concatenate([E[Mneg, :][-1, :], E0], axis=0), self.incubation_period),
-                x=[time[Mneg][-1], 0],
-                axis=0
-            )
-            Inew_neg = np.flip(
-                cumtrapz(
-                    np.divide(np.flip(E[Mneg, :], axis=0), self.incubation_period),
-                    x=np.flip(time[Mneg]),
-                    axis=0,
-                    initial=0
-                ),
-                axis=0
-            ) - Ineg_zero
-
-        if np.any(Mpos) and np.any(Mneg):
-            Icumulative = I0 + np.concatenate([Inew_neg, Inew_pos], axis=0)
-        elif np.any(Mpos):
-            Icumulative = I0+Inew_pos
-        elif np.any(Mneg):
-            Icumulative = I0+Inew_neg
+            Idiff_pos = cumtrapz(
+                np.divide(E[idx_pos, :], self.incubation_period), x=time[idx_pos], axis=0, initial=0
+            ) + Ipos_zero
+        if idx_neg.size > 0:
+            Idiff_neg = I[idx_neg,:]-I0
+        if idx_neg.size>0 and idx_pos.size > 0:
+            Icumulative = I0 + np.concatenate([Idiff_neg, Idiff_pos], axis=0)
+        elif idx_pos.size > 0:
+            Icumulative = I0 + Idiff_pos
+        elif idx_neg.size > 0:
+            Icumulative = I0 + Idiff_neg
         else:
             raise RuntimeError("Should not happen.")
 
         # Compute the number of hospitalized people for each day
-        htime_min = time.min()-self.hospitalization_duration
-        htime_max = time.max()+self.hospitalization_duration
-        htime_beg = np.arange(time[0], htime_min-dt/2, -dt)
-        htime_end = np.arange(time[-1], htime_max+dt/2, dt)
+        htime_min = time.min() - self.hospitalization_duration
+        htime_max = time.max() + self.hospitalization_duration
+        htime_beg = np.arange(htime_min, time[0]+dt/2, dt)
+        htime_end = np.arange(time[-1], htime_max + dt/2, dt)
         htime = np.concatenate([htime_beg, time, htime_end])
         Shl, Ehl, Ihl, Rhl = np.split(self.SEIR_solution(htime - self.hospitalization_lag_from_onset), 4, axis=-1)
-        H_new_cases_a_day = cumtrapz(
-            np.multiply(self.hospitalization_probability, np.divide(Ehl, self.incubation_period)),
-            x=htime,
-            axis=0,
-            initial=0
-        )
+        H_new_cases_per_dt =\
+            np.multiply(self.hospitalization_probability, np.divide(Ehl, self.incubation_period))*dt
         Hwindow = np.ones(int(round(self.hospitalization_duration / dt)))
         H_active_cases = np.stack(
-            [np.convolve(H_new_cases_a_day[:, i], Hwindow, mode='same') * dt for i in range(self.num_compartments)],
+            [np.convolve(H_new_cases_per_dt[:, i], Hwindow, mode='same')*dt for i in range(self.num_compartments)],
             axis=-1
         )
-        H_active_cases = H_active_cases[htime_beg.size:htime_beg.size+time.size]
-
+        H_active_cases = H_active_cases[htime_beg.size:htime_beg.size + time.size]
         # Compute the number of people in ICU for each day
-        itime_min = time.min()-self.icu_duration
-        itime_max = time.max()+self.icu_duration
-        itime_beg = np.arange(time[0], itime_min-dt/2, -dt)
-        itime_end = np.arange(time[-1], itime_max+dt/2, dt)
+        itime_min = time.min() - self.icu_duration
+        itime_max = time.max() + self.icu_duration
+        itime_beg = np.arange(itime_min, time[0] + dt/2, dt)
+        itime_end = np.arange(time[-1], itime_max + dt/2, dt)
         itime = np.concatenate([itime_beg, time, itime_end])
         SEIR_icu_lag = self.SEIR_solution(itime - self.icu_lag_from_onset)
         E_icu_lag = np.split(SEIR_icu_lag, 4, axis=-1)[2]
-        ICU_new_cases_a_day = cumtrapz(
-            np.multiply(self.icu_probability, np.divide(E_icu_lag, self.incubation_period)), x=itime, axis=0, initial=0
-        )
+        ICU_new_cases_per_dt =\
+            np.multiply(self.icu_probability, np.divide(E_icu_lag, self.incubation_period))*dt
+
         ICUwindow = np.ones(int(round(self.icu_duration / dt)))
         ICU_active_cases = np.stack(
-            [np.convolve(ICU_new_cases_a_day[:, i], ICUwindow, mode='same') * dt for i in range(self.num_compartments)],
+            [np.convolve(ICU_new_cases_per_dt[:, i], ICUwindow, mode='same') for i in range(self.num_compartments)],
             axis=-1
         )
-        ICU_active_cases = ICU_active_cases[itime_beg.size:itime_beg.size+time.size]
+        ICU_active_cases = ICU_active_cases[itime_beg.size:itime_beg.size + time.size]
 
         # Compute the total number of deaths
         SEIR_death_lag = self.SEIR_solution(time - self.death_lag_from_onset)
