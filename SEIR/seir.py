@@ -503,10 +503,15 @@ class SEIR:
             raise RuntimeError("Should not happen.")
 
         # Compute the number of hospitalized people for each day
-        Shl, Ehl, Ihl, Rhl = np.split(self.SEIR_solution(time - self.hospitalization_lag_from_onset), 4, axis=-1)
+        htime_min = time.min()-self.hospitalization_duration
+        htime_max = time.max()+self.hospitalization_duration
+        htime_beg = np.arange(time[0], htime_min-dt/2, -dt)
+        htime_end = np.arange(time[-1], htime_max+dt/2, dt)
+        htime = np.concatenate([htime_beg, time, htime_end])
+        Shl, Ehl, Ihl, Rhl = np.split(self.SEIR_solution(htime - self.hospitalization_lag_from_onset), 4, axis=-1)
         H_new_cases_a_day = cumtrapz(
             np.multiply(self.hospitalization_probability, np.divide(Ehl, self.incubation_period)),
-            x=time,
+            x=htime,
             axis=0,
             initial=0
         )
@@ -515,18 +520,25 @@ class SEIR:
             [np.convolve(H_new_cases_a_day[:, i], Hwindow, mode='same') * dt for i in range(self.num_compartments)],
             axis=-1
         )
+        H_active_cases = H_active_cases[htime_beg.size:htime_beg.size+time.size]
 
         # Compute the number of people in ICU for each day
-        SEIR_icu_lag = self.SEIR_solution(time - self.icu_lag_from_onset)
+        itime_min = time.min()-self.icu_duration
+        itime_max = time.max()+self.icu_duration
+        itime_beg = np.arange(time[0], itime_min-dt/2, -dt)
+        itime_end = np.arange(time[-1], itime_max+dt/2, dt)
+        itime = np.concatenate([itime_beg, time, itime_end])
+        SEIR_icu_lag = self.SEIR_solution(itime - self.icu_lag_from_onset)
         E_icu_lag = np.split(SEIR_icu_lag, 4, axis=-1)[2]
         ICU_new_cases_a_day = cumtrapz(
-            np.multiply(self.icu_probability, np.divide(E_icu_lag, self.incubation_period)), x=time, axis=0, initial=0
+            np.multiply(self.icu_probability, np.divide(E_icu_lag, self.incubation_period)), x=itime, axis=0, initial=0
         )
         ICUwindow = np.ones(int(round(self.icu_duration / dt)))
         ICU_active_cases = np.stack(
             [np.convolve(ICU_new_cases_a_day[:, i], ICUwindow, mode='same') * dt for i in range(self.num_compartments)],
             axis=-1
         )
+        ICU_active_cases = ICU_active_cases[itime_beg.size:itime_beg.size+time.size]
 
         # Compute the total number of deaths
         SEIR_death_lag = self.SEIR_solution(time - self.death_lag_from_onset)
