@@ -4,7 +4,6 @@ from typing import Any, Callable, List, Optional, Union, Text
 
 import numpy as np
 from scipy.integrate import solve_ivp, cumtrapz, trapz
-from scipy.stats import linregress
 import pandas as pd
 
 
@@ -401,6 +400,9 @@ class SEIR:
             postime_mask = time >= t0
             if np.sum(postime_mask) == time.size:
                 return np.swapaxes(solution.sol(time), 0, 1)
+            elif np.sum(postime_mask) == 0:
+                negsol = np.repeat(np.expand_dims(self.Y0, 0), time.size, 0)
+                return negsol
             else:
                 possol = np.swapaxes(solution.sol(time[postime_mask]), 0, 1)
                 negsol = np.repeat(np.expand_dims(self.Y0, 0), time.size - sum(postime_mask), 0)
@@ -409,7 +411,7 @@ class SEIR:
         self.t0 = t0
         self.SEIR_solution = SEIR_solution
 
-    def evaluate_solution(self, time: np.ndarray):
+    def evaluate_solution(self, time: np.ndarray, only_real_results: bool = True):
         """
         Evaluates the results of a previously computed simulation.
 
@@ -418,6 +420,8 @@ class SEIR:
         time: np.ndarray
             Time instances for which to evaluate the simulated model.
             Expected to be equidistant.
+        only_real_results: bool
+            If true, all results for which there is not enough history are set to NaN.
 
         Returns
         -------
@@ -499,14 +503,18 @@ class SEIR:
         htime_end = np.arange(time[-1], htime_max + dt/2, dt)
         htime = np.concatenate([htime_beg, time, htime_end])
         Shl, Ehl, Ihl, Rhl = np.split(self.SEIR_solution(htime - self.hospitalization_lag_from_onset), 4, axis=-1)
-        H_new_cases_per_dt =\
-            np.multiply(self.hospitalization_probability, np.divide(Ehl, self.incubation_period))*dt
+        H_new_cases_rate =\
+            np.multiply(self.hospitalization_probability, np.divide(Ehl, self.incubation_period))
         Hwindow = np.ones(int(round(self.hospitalization_duration / dt)))
         H_active_cases = np.stack(
-            [np.convolve(H_new_cases_per_dt[:, i], Hwindow, mode='same')*dt for i in range(self.num_compartments)],
+            [np.convolve(H_new_cases_rate[:, i], Hwindow, mode='same')*dt for i in range(self.num_compartments)],
             axis=-1
         )
+        if only_real_results:
+            H_t0 = self.t0+self.hospitalization_lag_from_onset+self.hospitalization_duration
+            H_active_cases[htime < H_t0] = np.nan
         H_active_cases = H_active_cases[htime_beg.size:htime_beg.size + time.size]
+
         # Compute the number of people in ICU for each day
         itime_min = time.min() - self.icu_duration
         itime_max = time.max() + self.icu_duration
@@ -515,14 +523,18 @@ class SEIR:
         itime = np.concatenate([itime_beg, time, itime_end])
         SEIR_icu_lag = self.SEIR_solution(itime - self.icu_lag_from_onset)
         E_icu_lag = np.split(SEIR_icu_lag, 4, axis=-1)[2]
-        ICU_new_cases_per_dt =\
-            np.multiply(self.icu_probability, np.divide(E_icu_lag, self.incubation_period))*dt
+        ICU_new_cases_rate =\
+            np.multiply(self.icu_probability, np.divide(E_icu_lag, self.incubation_period))
 
         ICUwindow = np.ones(int(round(self.icu_duration / dt)))
         ICU_active_cases = np.stack(
-            [np.convolve(ICU_new_cases_per_dt[:, i], ICUwindow, mode='same') for i in range(self.num_compartments)],
+            [np.convolve(ICU_new_cases_rate[:, i], ICUwindow, mode='same')*dt for i in range(
+                self.num_compartments)],
             axis=-1
         )
+        if only_real_results:
+            ICU_t0 = self.t0+self.icu_lag_from_onset+self.icu_duration
+            ICU_active_cases[itime < ICU_t0] = np.nan
         ICU_active_cases = ICU_active_cases[itime_beg.size:itime_beg.size + time.size]
 
         # Compute the total number of deaths
@@ -534,6 +546,13 @@ class SEIR:
             axis=0,
             initial=0
         )
+        # Set deaths to NaN for t<=t0, as we have no real knowledge of those
+        if only_real_results:
+            deaths_t0 = self.t0+self.death_lag_from_onset
+            idx_closest_to_deaths_t0 = np.fabs(time-deaths_t0).argmin()
+            deaths -= deaths[idx_closest_to_deaths_t0]
+            deaths[time<deaths_t0]=np.nan
+
 
         # Compute the total cases over all compartments
         Sall = np.expand_dims(np.sum(S, axis=-1), -1)
