@@ -8,30 +8,29 @@ import pandas as pd
 
 
 class SEIR:
-
     """
     Implementation of a SEIR model
     """
 
     def __init__(
-            self,
-            *,
-            incubation_period: Union[int, float, np.ndarray],
-            infectious_period: Union[int, float, np.ndarray],
-            initial_R0: Union[int, float],
-            hospitalization_probability: Union[float, np.ndarray],
-            hospitalization_duration: Union[float, int],
-            hospitalization_lag_from_onset: Union[float, int],
-            icu_probability: Union[float, int],
-            icu_duration: Union[float, int],
-            icu_lag_from_onset: Union[float, np.ndarray],
-            death_probability: Union[float, np.ndarray],
-            death_lag_from_onset: Union[float, int],
-            population: Union[float, np.ndarray],
-            compartments: Optional[List[Any]] = None,
-            contacts_matrix: Optional[np.ndarray] = None,
-            restrictions_function: Optional[Callable[[float], Union[float, np.ndarray]]] = None,
-            imported_cases_function: Optional[Callable] = None
+        self,
+        *,
+        incubation_period: Union[int, float, np.ndarray],
+        infectious_period: Union[int, float, np.ndarray],
+        initial_R0: Union[int, float],
+        hospitalization_probability: Union[float, np.ndarray],
+        hospitalization_duration: Union[float, int],
+        hospitalization_lag_from_onset: Union[float, int],
+        icu_probability: Union[float, int],
+        icu_duration: Union[float, int],
+        icu_lag_from_onset: Union[float, np.ndarray],
+        death_probability: Union[float, np.ndarray],
+        death_lag_from_onset: Union[float, int],
+        population: Union[float, np.ndarray],
+        compartments: Optional[List[Any]] = None,
+        contacts_matrix: Optional[np.ndarray] = None,
+        restrictions_function: Optional[Callable[[float], Union[float, np.ndarray]]] = None,
+        imported_cases_function: Optional[Callable] = None
     ):
         """
         Initializes the SEIR models parameters and computes the infectivity
@@ -139,24 +138,24 @@ class SEIR:
         self.SEIR_solution: Optional[Callable[[np.ndarray], np.ndarray]] = None
 
     def update_parameters(
-            self,
-            *,
-            incubation_period: Optional[Union[int, float, np.ndarray]] = None,
-            infectious_period: Optional[Union[int, float, np.ndarray]] = None,
-            initial_R0: Optional[Union[int, float]] = None,
-            hospitalization_probability: Optional[Union[float, np.ndarray]] = None,
-            hospitalization_duration: Optional[Union[float, np.ndarray]] = None,
-            hospitalization_lag_from_onset: Optional[Union[float, np.ndarray]] = None,
-            icu_probability: Optional[Union[float, np.ndarray]] = None,
-            icu_duration: Optional[Union[float, np.ndarray]] = None,
-            icu_lag_from_onset: Optional[Union[float, np.ndarray]] = None,
-            death_probability: Optional[Union[float, np.ndarray]] = None,
-            death_lag_from_onset: Optional[Union[float, np.ndarray]] = None,
-            population: Optional[Union[float, np.ndarray]] = None,
-            compartments: Optional[List[Any]] = None,
-            contacts_matrix: Optional[np.ndarray] = None,
-            restrictions_function: Optional[Callable[[float], Union[float, np.ndarray]]] = None,
-            imported_cases_function: Optional[Callable] = None
+        self,
+        *,
+        incubation_period: Optional[Union[int, float, np.ndarray]] = None,
+        infectious_period: Optional[Union[int, float, np.ndarray]] = None,
+        initial_R0: Optional[Union[int, float]] = None,
+        hospitalization_probability: Optional[Union[float, np.ndarray]] = None,
+        hospitalization_duration: Optional[Union[float, np.ndarray]] = None,
+        hospitalization_lag_from_onset: Optional[Union[float, np.ndarray]] = None,
+        icu_probability: Optional[Union[float, np.ndarray]] = None,
+        icu_duration: Optional[Union[float, np.ndarray]] = None,
+        icu_lag_from_onset: Optional[Union[float, np.ndarray]] = None,
+        death_probability: Optional[Union[float, np.ndarray]] = None,
+        death_lag_from_onset: Optional[Union[float, np.ndarray]] = None,
+        population: Optional[Union[float, np.ndarray]] = None,
+        compartments: Optional[List[Any]] = None,
+        contacts_matrix: Optional[np.ndarray] = None,
+        restrictions_function: Optional[Callable[[float], Union[float, np.ndarray]]] = None,
+        imported_cases_function: Optional[Callable] = None
     ):
         """
         Initializes the SEIR models parameters and computes the infectivity
@@ -234,9 +233,9 @@ class SEIR:
         ------
         infectivity_matrix: np.ndarray
         """
-        normalization = 1 / self.infectious_period *\
-            self.initial_R0 * self.population.sum() /\
-            (self.population @ contacts_matrix).sum()
+        normalization = 1 / self.infectious_period * \
+                        self.initial_R0 * self.population.sum() / \
+                        (self.population @ contacts_matrix).sum()
         # Symmetrize the contact matrix here since if
         # compartment 'i' has contacts with compartment 'j',
         # it should also be vice versa
@@ -295,7 +294,6 @@ class SEIR:
         Sa = Y[:self.num_compartments]
         Ea = Y[self.num_compartments:2 * self.num_compartments]
         Ia = Y[2 * self.num_compartments:3 * self.num_compartments]
-        Ra = Y[3 * self.num_compartments:]
 
         res = np.zeros(4 * self.num_compartments)
         dS_dt = res[:self.num_compartments]
@@ -316,10 +314,10 @@ class SEIR:
         return res
 
     def set_initial_state(
-            self,
-            population_exposed: Union[int, float, np.ndarray],
-            population_infected: Union[int, float, np.ndarray],
-            probabilities: bool = False
+        self,
+        population_exposed: Union[int, float, np.ndarray],
+        population_infected: Union[int, float, np.ndarray],
+        probabilities: bool = False
     ):
         """
         Sets the initial state of the population system.
@@ -353,8 +351,8 @@ class SEIR:
         else:
 
             if isinstance(population_exposed, (int, float)):
-                exposed = self._fix_size(population_exposed) /\
-                    self.num_compartments
+                exposed = self._fix_size(population_exposed) / \
+                          self.num_compartments
             elif isinstance(population_exposed, (list, np.ndarray)):
                 population_exposed = np.array(population_exposed)
                 assert population_exposed.size == self.num_compartments
@@ -374,8 +372,8 @@ class SEIR:
         self.Y0 = np.concatenate([susceptible, exposed, infected, removed])
 
     def simulate(
-            self, max_simulation_time: Union[int, float], t0: float = 0.0, max_step: float = 0.5,
-            method: Text = 'DOP853'
+        self, max_simulation_time: Union[int, float], t0: float = 0.0, max_step: float = 0.5,
+        method: Text = 'DOP853'
     ):
         """
         Simulates the SEIR model.
@@ -486,8 +484,8 @@ class SEIR:
                 np.divide(E[idx_pos, :], self.incubation_period), x=time[idx_pos], axis=0, initial=0
             ) + Ipos_zero
         if idx_neg.size > 0:
-            Idiff_neg = I[idx_neg,:]-I0
-        if idx_neg.size>0 and idx_pos.size > 0:
+            Idiff_neg = I[idx_neg, :] - I0
+        if idx_neg.size > 0 and idx_pos.size > 0:
             Icumulative = I0 + np.concatenate([Idiff_neg, Idiff_pos], axis=0)
         elif idx_pos.size > 0:
             Icumulative = I0 + Idiff_pos
@@ -499,41 +497,41 @@ class SEIR:
         # Compute the number of hospitalized people for each day
         htime_min = time.min() - self.hospitalization_duration
         htime_max = time.max() + self.hospitalization_duration
-        htime_beg = np.arange(htime_min, time[0]+dt/2, dt)
-        htime_end = np.arange(time[-1], htime_max + dt/2, dt)
+        htime_beg = np.arange(htime_min, time[0] + dt / 2, dt)
+        htime_end = np.arange(time[-1], htime_max + dt / 2, dt)
         htime = np.concatenate([htime_beg, time, htime_end])
         Shl, Ehl, Ihl, Rhl = np.split(self.SEIR_solution(htime - self.hospitalization_lag_from_onset), 4, axis=-1)
-        H_new_cases_rate =\
+        H_new_cases_rate = \
             np.multiply(self.hospitalization_probability, np.divide(Ehl, self.incubation_period))
         Hwindow = np.ones(int(round(self.hospitalization_duration / dt)))
         H_active_cases = np.stack(
-            [np.convolve(H_new_cases_rate[:, i], Hwindow, mode='same')*dt for i in range(self.num_compartments)],
+            [np.convolve(H_new_cases_rate[:, i], Hwindow, mode='same') * dt for i in range(self.num_compartments)],
             axis=-1
         )
         if only_real_results:
-            H_t0 = self.t0+self.hospitalization_lag_from_onset+self.hospitalization_duration
+            H_t0 = self.t0 + self.hospitalization_lag_from_onset + self.hospitalization_duration
             H_active_cases[htime < H_t0] = np.nan
         H_active_cases = H_active_cases[htime_beg.size:htime_beg.size + time.size]
 
         # Compute the number of people in ICU for each day
         itime_min = time.min() - self.icu_duration
         itime_max = time.max() + self.icu_duration
-        itime_beg = np.arange(itime_min, time[0] + dt/2, dt)
-        itime_end = np.arange(time[-1], itime_max + dt/2, dt)
+        itime_beg = np.arange(itime_min, time[0] + dt / 2, dt)
+        itime_end = np.arange(time[-1], itime_max + dt / 2, dt)
         itime = np.concatenate([itime_beg, time, itime_end])
         SEIR_icu_lag = self.SEIR_solution(itime - self.icu_lag_from_onset)
         E_icu_lag = np.split(SEIR_icu_lag, 4, axis=-1)[2]
-        ICU_new_cases_rate =\
+        ICU_new_cases_rate = \
             np.multiply(self.icu_probability, np.divide(E_icu_lag, self.incubation_period))
 
         ICUwindow = np.ones(int(round(self.icu_duration / dt)))
         ICU_active_cases = np.stack(
-            [np.convolve(ICU_new_cases_rate[:, i], ICUwindow, mode='same')*dt for i in range(
+            [np.convolve(ICU_new_cases_rate[:, i], ICUwindow, mode='same') * dt for i in range(
                 self.num_compartments)],
             axis=-1
         )
         if only_real_results:
-            ICU_t0 = self.t0+self.icu_lag_from_onset+self.icu_duration
+            ICU_t0 = self.t0 + self.icu_lag_from_onset + self.icu_duration
             ICU_active_cases[itime < ICU_t0] = np.nan
         ICU_active_cases = ICU_active_cases[itime_beg.size:itime_beg.size + time.size]
 
@@ -548,11 +546,10 @@ class SEIR:
         )
         # Set deaths to NaN for t<=t0, as we have no real knowledge of those
         if only_real_results:
-            deaths_t0 = self.t0+self.death_lag_from_onset
-            idx_closest_to_deaths_t0 = np.fabs(time-deaths_t0).argmin()
+            deaths_t0 = self.t0 + self.death_lag_from_onset
+            idx_closest_to_deaths_t0 = np.fabs(time - deaths_t0).argmin()
             deaths -= deaths[idx_closest_to_deaths_t0]
-            deaths[time<deaths_t0]=np.nan
-
+            deaths[time < deaths_t0] = np.nan
 
         # Compute the total cases over all compartments
         Sall = np.expand_dims(np.sum(S, axis=-1), -1)
