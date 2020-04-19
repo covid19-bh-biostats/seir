@@ -7,8 +7,7 @@ from typing import Callable, Dict, List, Optional, Text, Tuple, Union
 import numpy as np
 
 
-def _parse_compartments(compartments_str: Text,
-                        all_compartments: List[Text]) -> List[Text]:
+def _parse_compartments(compartments_str: Text, all_compartments: List[Text]) -> List[Text]:
     """
     Converts a string representing one or multiple compartments
     to a list of compartments. 'all' is converted to list of
@@ -61,8 +60,7 @@ def _parse_compartments(compartments_str: Text,
         return compartments
 
 
-def _get_infectivity_modifier_from_file(path: Text, num_all_compartments: int
-                                        ) -> np.ndarray:
+def _get_infectivity_modifier_from_file(path: Text, num_all_compartments: int) -> np.ndarray:
     """
     Loads infecticity modifier (matrix) from a CSV file.
 
@@ -98,15 +96,13 @@ def _get_infectivity_modifier_from_file(path: Text, num_all_compartments: int
                               f"{num_all_compartments})"))
 
     else:
-        raise ValueError((f"Infectivity modifier file "
-                          f"{path} does not exist."))
+        raise ValueError(f"Infectivity modifier file {path} does not exist.")
 
     return modifier_matrix
 
 
-def _parse_infectivity_modifier_matrix_definition_single_line(
-        line: Text,
-        all_compartments: List[Text]) -> Tuple[List[int], List[int], float]:
+def _parse_infectivity_modifier_matrix_definition_single_line(line: Text, all_compartments: List[Text])\
+                                                              -> Tuple[List[int], List[int], float]:
     """
     Parses a single line defining modifications to the infectivity matrix.
 
@@ -166,9 +162,8 @@ def _parse_infectivity_modifier_matrix_definition_single_line(
         infectivity_matrix_indexes_to_modify[:, 1], modifier
 
 
-def _parse_infectivity_modifier_matrix_definition_string(
-        infectivity_modifier_string: Text,
-        all_compartments: List[Text]) -> np.ndarray:
+def _parse_infectivity_modifier_matrix_definition_string(infectivity_modifier_string: Text, all_compartments: List[Text])\
+                                                         -> np.ndarray:
     """
     Parses the infectivity rate/restriction matrix definition string
 
@@ -196,11 +191,8 @@ def _parse_infectivity_modifier_matrix_definition_string(
     return modifier_matrix
 
 
-def _parse_restriction_section(
-        section: Dict[Text, Text], section_name: Text,
-        all_compartments: List[Text]
-) -> Tuple[Callable[[float], Union[float, np.
-                                   ndarray]], Dict[Text, Union[Text, int]]]:
+def _parse_restriction_section(section: Dict[Text, Text], section_name: Text, all_compartments: List[Text])\
+                               -> Tuple[Callable[[float], Union[float, np.ndarray]], Dict[Text, Union[Text, int]]]:
     """
     Parses a single [restriction LABEL] section of the config file.
 
@@ -252,7 +244,7 @@ def _parse_restriction_section(
         # Try to interpret the infectivity modifier as a single float
         inf_modifier = float(inf_modifier_str)
     except Exception:
-        ...
+        pass
 
     if not inf_modifier:  # Is not a float
         # Try to interpret the infectivity modifier as a filepath
@@ -276,10 +268,8 @@ def _parse_restriction_section(
     return restrictions_function, info
 
 
-def parse_restriction_sections(
-        config: configparser.ConfigParser, compartments: List[Text]
-) -> Tuple[Optional[Callable[[float], Union[float, np.ndarray]]], Optional[
-        List[Dict[Text, Union[Text, int]]]]]:
+def parse_restriction_sections(config: configparser.ConfigParser, compartments: List[Text])\
+                               -> Tuple[Optional[Callable[[float], Union[float, np.ndarray]]], Optional[List[Dict[Text, Union[Text, int]]]]]:
     """
     Parses all "[restriction NAME]" sections from the configparser to
     a function and list of infos on the restrictions.
@@ -323,8 +313,7 @@ def parse_restriction_sections(
     restr_funs = []
     restr_info: List[Dict[Text, Union[int, Text]]] = []
     for rsec in restriction_sections:
-        fun, info = _parse_restriction_section(dict(config.items(rsec)), rsec,
-                                               compartments)
+        fun, info = _parse_restriction_section(dict(config.items(rsec)), rsec, compartments)
         restr_funs.append(fun)
         restr_info.append(info)
 
