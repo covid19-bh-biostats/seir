@@ -52,7 +52,7 @@ def main(config_file, contacts_matrix_file, visualize_compartments, output_file_
     results = model.evaluate_solution(time)
 
     # Save data
-    if output_file == 'csv':
+    if output_file_format == 'csv':
         output_file = output_file or os.path.basename(f'{config_file}.csv')
         results.to_csv(output_file)
     elif output_file_format == 'json':
