@@ -1,4 +1,4 @@
-pip==25.2
+pip==25.3
 wheel==0.46.2
 watchdog==0.10.2
 flake8==3.7.9
